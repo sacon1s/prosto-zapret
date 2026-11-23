@@ -42,7 +42,7 @@ foreach ($m in $mgr) {
         Write-Host ''
         Write-Host '[!] ВНИМАНИЕ: обнаружена служба ZapretGUI (чужой менеджер winws, автозапуск).' -ForegroundColor Red
         Write-Host '    Она будет убивать наш winws и перезапускать свой. Двум менеджерам нельзя.' -ForegroundColor Red
-        Write-Host '    Запустите TAKE-CONTROL.bat, чтобы отключить её (обратимо: RESTORE-ZAPRETGUI.bat).' -ForegroundColor Yellow
+        Write-Host '    Запустите extra\TAKE-CONTROL.bat, чтобы отключить её (обратимо: extra\RESTORE-ZAPRETGUI.bat).' -ForegroundColor Yellow
     }
 }
 

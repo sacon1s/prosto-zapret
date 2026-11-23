@@ -22,7 +22,7 @@ $task = Get-ScheduledTask -TaskName 'ZapretPro' -ErrorAction SilentlyContinue
 if ($task) {
     Write-Host '[3] Автозапуск с ПК: ВКЛЮЧЁН (+ сторож)' -ForegroundColor Green
 } else {
-    Write-Host '[3] Автозапуск с ПК: выключен (файл "2 - АВТОЗАПУСК.bat" включит)' -ForegroundColor DarkGray
+    Write-Host '[3] Автозапуск с ПК: выключен (файл "3 - АВТОЗАПУСК.bat" включит)' -ForegroundColor DarkGray
 }
 
 # 3. discord media pins

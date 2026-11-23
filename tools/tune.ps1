@@ -89,9 +89,9 @@ if ($bestNum -gt 0) {
     Write-Host ''
     Write-Host '[x] Ни одна стратегия не улучшила доступ.' -ForegroundColor Red
     Write-Host '    Самые частые причины:' -ForegroundColor Yellow
-    Write-Host '    1) DNS подменяется провайдером -> запустите DNS-SET.bat и повторите TUNE;' -ForegroundColor Yellow
-    Write-Host '    2) VPN/прокси/антивирус вмешивается -> см. DIAGNOSTICS.bat;' -ForegroundColor Yellow
-    Write-Host '    3) Ваш провайдер использует новый метод блокировки -> обновите ядро: UPDATE.bat.' -ForegroundColor Yellow
+    Write-Host '    1) DNS подменяется провайдером -> запустите extra\DNS-SET.bat и повторите TUNE;' -ForegroundColor Yellow
+    Write-Host '    2) VPN/прокси/антивирус вмешивается -> см. extra\DIAGNOSTICS.bat;' -ForegroundColor Yellow
+    Write-Host '    3) Ваш провайдер использует новый метод блокировки -> обновите ядро: extra\UPDATE.bat.' -ForegroundColor Yellow
     Write-Log 'tune done: no working strategy'
 }
 $report | Set-Content $reportFile -Encoding UTF8

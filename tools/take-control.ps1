@@ -24,7 +24,7 @@ if ($svcNames.Count -eq 0) {
         Set-Service -Name $n -StartupType Disabled -ErrorAction SilentlyContinue
         Set-ConfigKey -Key 'RESTORED_SERVICE' -Value $n
         Set-ConfigKey -Key ('RESTORED_SERVICE_START_' + $n) -Value ([string]$wasStart)
-        Write-Host ('[+] Служба отключена (была Start=' + $wasStart + '). Вернуть: RESTORE-ZAPRETGUI.bat') -ForegroundColor Green
+        Write-Host ('[+] Служба отключена (была Start=' + $wasStart + '). Вернуть: extra\RESTORE-ZAPRETGUI.bat') -ForegroundColor Green
     }
 }
 
@@ -59,8 +59,8 @@ if ($r.Ok) {
 # reminder about guardian
 $task = Get-ScheduledTask -TaskName 'ZapretPro' -ErrorAction SilentlyContinue
 if (-not $task) {
-    Write-Host '[~] Сторож ещё не установлен - запустите AUTOSTART-INSTALL.bat, чтобы всё работало само.' -ForegroundColor Yellow
+    Write-Host '[~] Сторож ещё не установлен - запустите "3 - АВТОЗАПУСК.bat", чтобы всё работало само.' -ForegroundColor Yellow
 }
 Write-Host ''
-Write-Host 'Проверьте Discord/YouTube. Откат (вернуть ZapretGUI): RESTORE-ZAPRETGUI.bat' -ForegroundColor DarkGray
+Write-Host 'Проверьте Discord/YouTube. Откат (вернуть ZapretGUI): extra\RESTORE-ZAPRETGUI.bat' -ForegroundColor DarkGray
 exit 0

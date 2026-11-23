@@ -38,7 +38,7 @@ if ($wd) {
     }
 }
 
-# --- 2. foreign managers: stop + disable (reversible via RESTORE-ZAPRETGUI.bat) ---
+# --- 2. foreign managers: stop + disable (reversible via extra\RESTORE-ZAPRETGUI.bat) ---
 $mgrNames = @(Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services' -ErrorAction SilentlyContinue |
     Where-Object {
         $ip2 = (Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue).ImagePath
@@ -49,7 +49,7 @@ foreach ($n in $mgrNames) {
     Stop-Service -Name $n -Force -ErrorAction SilentlyContinue
     Set-Service -Name $n -StartupType Disabled -ErrorAction SilentlyContinue
     Set-ConfigKey -Key ('RESTORED_SERVICE_START_' + $n) -Value ([string]$wasStart)
-    Write-Host ('[+] Служба ' + $n + ' остановлена и отключена (откат: RESTORE-ZAPRETGUI.bat).') -ForegroundColor Green
+    Write-Host ('[+] Служба ' + $n + ' остановлена и отключена (откат: extra\RESTORE-ZAPRETGUI.bat).') -ForegroundColor Green
 }
 
 # --- 3. media fix (also saves the best strategy) ---

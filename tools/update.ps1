@@ -21,7 +21,7 @@ $null = Stop-Zapret
 $dl = & curl.exe -4 -sL --max-time 180 -o $zip $repoUrl
 $dlExit = $LASTEXITCODE
 if ($dlExit -ne 0 -or -not (Test-Path $zip) -or ((Get-Item $zip).Length -lt 100000)) {
-    Write-Host ('[x] Не удалось скачать ({0}). Проверьте интернет и повторите UPDATE.bat.' -f $dlExit) -ForegroundColor Red
+    Write-Host ('[x] Не удалось скачать ({0}). Проверьте интернет и повторите extra\UPDATE.bat.' -f $dlExit) -ForegroundColor Red
     Remove-Item $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
     exit 1
 }
@@ -82,5 +82,5 @@ if ($alive.Count -gt 0) { Write-Host ('[+] zapret снова запущен (с�
 Remove-Item $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
 Write-Log ('updated core {0} -> {1}' -f $oldVer, $newVer)
 Write-Host ''
-Write-Host 'Готово. Если доступ пропал - запустите TUNE.bat (стратегии обновились).' -ForegroundColor Yellow
+Write-Host 'Готово. Если доступ пропал - запустите "5 - ПОДБОР НАСТРОЕК.bat" (стратегии обновились).' -ForegroundColor Yellow
 exit 0

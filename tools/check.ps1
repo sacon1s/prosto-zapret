@@ -50,10 +50,10 @@ try {
     Write-Host ('DNS: www.youtube.com -> {0}' -f ($ips -join ', ')) -ForegroundColor DarkGray
 } catch {
     $dnsOk = $false
-    Write-Host 'DNS: не удалось разрешить www.youtube.com - вероятна DNS-подмена (см. DNS-SET.bat)' -ForegroundColor Yellow
+    Write-Host 'DNS: не удалось разрешить www.youtube.com - вероятна DNS-подмена (см. extra\DNS-SET.bat)' -ForegroundColor Yellow
 }
 
 Write-Host ''
 if ($t.All) { Write-Host 'ИТОГ: всё работает.' -ForegroundColor Green; exit 0 }
-elseif ($t.YouTube -or $t.Discord) { Write-Host 'ИТОГ: работает частично. Запустите TUNE.bat.' -ForegroundColor Yellow; exit 1 }
-else { Write-Host 'ИТОГ: доступ нет. Порядок действий: 1) START.bat  2) TUNE.bat  3) DNS-SET.bat  4) UPDATE.bat  5) DIAGNOSTICS.bat' -ForegroundColor Red; exit 2 }
+elseif ($t.YouTube -or $t.Discord) { Write-Host 'ИТОГ: работает частично. Запустите "5 - ПОДБОР НАСТРОЕК.bat".' -ForegroundColor Yellow; exit 1 }
+else { Write-Host 'ИТОГ: доступ нет. Порядок действий: 1) "1 - ВКЛЮЧИТЬ ЗАПРЕТ.bat"  2) "5 - ПОДБОР НАСТРОЕК.bat"  3) extra\DNS-SET.bat  4) extra\UPDATE.bat  5) extra\DIAGNOSTICS.bat' -ForegroundColor Red; exit 2 }

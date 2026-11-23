@@ -1,5 +1,5 @@
 ﻿# autostart.ps1 - resident guardian: keeps zapret running and healthy.
-# Started hidden by the scheduled task (AUTOSTART-INSTALL.bat). Loops forever.
+# Started hidden by the scheduled task ("3 - АВТОЗАПУСК.bat"). Loops forever.
 . (Join-Path $PSScriptRoot 'common.ps1')
 $ErrorActionPreference = 'Continue'
 
@@ -54,7 +54,7 @@ while ($true) {
         }
         if ($foreign) {
             if ((Get-Date).Minute % 10 -eq 0 -and -not $foreignWarned) {
-                Write-Log 'foreign manager (ZapretGUI) active - guardian passive. Run TAKE-CONTROL.bat to disable it.' $logFile
+                Write-Log 'foreign manager (ZapretGUI) active - guardian passive. Run extra\TAKE-CONTROL.bat to disable it.' $logFile
                 $script:foreignWarned = $true
             }
             Start-Sleep -Seconds $stepSleep

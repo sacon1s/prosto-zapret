@@ -33,7 +33,7 @@ if ($Action -eq 'set') {
     } catch { Write-Host ('[~] Реестр: {0}' -f $_.Exception.Message) -ForegroundColor DarkGray }
     Clear-DnsCache
     Write-Host '[+] Кеш DNS очищен.' -ForegroundColor Green
-    Write-Host 'Теперь запустите TUNE.bat заново - стратегии проверятся с исправным DNS.' -ForegroundColor Yellow
+    Write-Host 'Теперь запустите "5 - ПОДБОР НАСТРОЕК.bat" заново - стратегии проверятся с исправным DNS.' -ForegroundColor Yellow
     exit 0
 }
 
@@ -62,5 +62,5 @@ foreach ($a in (Get-ActiveAdapters)) {
 $autoDoh = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters' -Name 'EnableAutoDoh' -ErrorAction SilentlyContinue).EnableAutoDoh
 Write-Host ('  Авто-DoH в реестре: {0}' -f $(if ($autoDoh -eq 2) { 'включён' } else { 'выключен (по умолчанию)' }))
 Write-Host ''
-Write-Host 'Подсказка: если домены резолвятся в странные IP (см. DIAGNOSTICS.bat) - запустите DNS-SET.bat.'
+Write-Host 'Подсказка: если домены резолвятся в странные IP (см. extra\DIAGNOSTICS.bat) - запустите extra\DNS-SET.bat.'
 exit 0

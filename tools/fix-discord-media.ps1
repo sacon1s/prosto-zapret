@@ -73,8 +73,8 @@ if ($fixed -gt 0) {
     }
     Say '[x] Ни одна стратегия не открыла media.discordapp.net (по данным curl).' 'Red'
     Say '    1) Проверьте Discord клиентом (Ctrl+R) - клиент часто работает, даже когда curl нет.' 'Yellow'
-    Say '    2) Проверьте DNS: DIAGNOSTICS.bat, при подмене - DNS-SET.bat и повторите.' 'Yellow'
-    Say '    3) Обновите ядро: UPDATE.bat (провайдер мог внедрить новый метод).' 'Yellow'
+    Say '    2) Проверьте DNS: extra\DIAGNOSTICS.bat, при подмене - extra\DNS-SET.bat и повторите.' 'Yellow'
+    Say '    3) Обновите ядро: extra\UPDATE.bat (провайдер мог внедрить новый метод).' 'Yellow'
     Write-Log 'media-fix: no strategy fixed media (curl)'
 }
 exit 0

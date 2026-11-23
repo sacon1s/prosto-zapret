@@ -17,7 +17,7 @@ Mark $(if (Test-Admin) { 'OK' } else { '~~' }) $(if (Test-Admin) { 'права �
 $procs = Get-ZapretProcess
 Mark 'OK' ('zapret (winws): ' + $(if ($procs.Count) { 'работает (PID ' + $procs[0].Id + ')' } else { 'не запущен' })) $(if ($procs.Count) { 'Green' } else { 'Yellow' })
 $task = Get-ScheduledTask -TaskName 'ZapretPro' -ErrorAction SilentlyContinue
-Mark 'OK' ('автозапуск+сторож: ' + $(if ($task) { 'установлен (' + $task.State + ')' } else { 'не установлен (AUTOSTART-INSTALL.bat)' })) $(if ($task) { 'Green' } else { 'DarkGray' })
+Mark 'OK' ('автозапуск+сторож: ' + $(if ($task) { 'установлен (' + $task.State + ')' } else { 'не установлен ("3 - АВТОЗАПУСК.bat")' })) $(if ($task) { 'Green' } else { 'DarkGray' })
 
 # 2. binaries present
 foreach ($f in @('winws.exe', 'WinDivert.dll', 'WinDivert64.sys')) {
@@ -45,8 +45,8 @@ foreach ($m in $mgrSvcs) {
     $svc = Get-Service -Name $m.PSChildName -ErrorAction SilentlyContinue
     if ($svc -and $svc.StartType -ne 'Disabled') { $mgrRunning = $true }
 }
-Mark $(if ($mgrRunning) { '!!' } else { 'OK' }) ('чужой менеджер winws (ZapretGUI): ' + $(if ($mgrRunning) { 'АКТИВЕН - будет убивать наш winws! Запустите TAKE-CONTROL.bat' } else { 'не активен' })) $(if ($mgrRunning) { 'Red' } else { 'Green' })
-if ($mgrRunning) { $issues += 'служба ZapretGUI активна и конкурирует за winws - запустите TAKE-CONTROL.bat (или оставьте ZapretGUI и не запускайте наш)' }
+Mark $(if ($mgrRunning) { '!!' } else { 'OK' }) ('чужой менеджер winws (ZapretGUI): ' + $(if ($mgrRunning) { 'АКТИВЕН - будет убивать наш winws! Запустите extra\TAKE-CONTROL.bat' } else { 'не активен' })) $(if ($mgrRunning) { 'Red' } else { 'Green' })
+if ($mgrRunning) { $issues += 'служба ZapretGUI активна и конкурирует за winws - запустите extra\TAKE-CONTROL.bat (или оставьте ZapretGUI и не запускайте наш)' }
 
 # 5. VPN adapters
 $vpn = @(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceDescription -match 'TAP|WireGuard|OpenVPN|Tailscale|ZeroTier|tun|Wintun' })
@@ -87,7 +87,7 @@ foreach ($d in @('www.youtube.com', 'discord.com')) {
     if ($dohSet.Count -eq 0) {
         Mark '~~' ('{0}: не удалось получить эталон (DoH недоступен)' -f $d) 'DarkGray'
     } elseif (-not $local) {
-        Mark '!!' ('{0}: локальный DNS НЕ отвечает -> DNS подменён/заблокирован. Запустите DNS-SET.bat' -f $d) 'Red'
+        Mark '!!' ('{0}: локальный DNS НЕ отвечает -> DNS подменён/заблокирован. Запустите extra\DNS-SET.bat' -f $d) 'Red'
     } elseif ($dohSet -contains $local) {
         Mark 'OK' ('{0}: {1} (в эталонном наборе из {2} IP)' -f $d, $local, $dohSet.Count) 'Green'
     } else {
@@ -97,7 +97,7 @@ foreach ($d in @('www.youtube.com', 'discord.com')) {
         if ($dohPrefix -eq $locPrefix) {
             Mark '~~' ('{0}: {1} (другой узел той же сети {2}.x - норма)' -f $d, $local, $dohPrefix) 'DarkGray'
         } else {
-            Mark '!!' ('{0}: локальный {1} != эталон {2} -> возможна DNS-подмена. Запустите DNS-SET.bat' -f $d, $local, ($dohSet -join ', ')) 'Red'
+            Mark '!!' ('{0}: локальный {1} != эталон {2} -> возможна DNS-подмена. Запустите extra\DNS-SET.bat' -f $d, $local, ($dohSet -join ', ')) 'Red'
         }
     }
 }
@@ -122,5 +122,5 @@ if ($issues.Count -eq 0) {
     foreach ($i in $issues) { Write-Host ('  - ' + $i) -ForegroundColor Yellow }
 }
 Write-Host ''
-Write-Host 'Дальше по ситуации: START.bat -> TUNE.bat -> DNS-SET.bat -> UPDATE.bat' -ForegroundColor DarkGray
+Write-Host 'Дальше по ситуации: "1 - ВКЛЮЧИТЬ ЗАПРЕТ.bat" -> "5 - ПОДБОР НАСТРОЕК.bat" -> extra\DNS-SET.bat -> extra\UPDATE.bat' -ForegroundColor DarkGray
 exit 0

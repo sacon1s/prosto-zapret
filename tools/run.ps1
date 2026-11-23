@@ -73,8 +73,8 @@ if (-not $NoCheck) {
             & (Join-Path $PSScriptRoot 'tune.ps1')
             exit $LASTEXITCODE
         } elseif (-not $NoHint) {
-            Write-Host 'Запустите TUNE.bat для автоматического подбора рабочей стратегии.' -ForegroundColor Yellow
-            Write-Host 'Если не поможет - проверьте DNS: DNS-SET.bat (помощь в README.md).' -ForegroundColor Yellow
+            Write-Host 'Запустите "5 - ПОДБОР НАСТРОЕК.bat" для автоматического подбора рабочей стратегии.' -ForegroundColor Yellow
+            Write-Host 'Если не поможет - проверьте DNS: extra\DNS-SET.bat (помощь в README.md).' -ForegroundColor Yellow
         }
         exit 1
     }
