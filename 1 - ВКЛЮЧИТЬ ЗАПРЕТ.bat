@@ -16,6 +16,7 @@ if not exist "%~dp0.setup-done" (
     pause
     exit /b 0
 )
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\check-updates.ps1"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\run.ps1"
 if errorlevel 1 (
     echo.

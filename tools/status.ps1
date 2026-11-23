@@ -49,6 +49,9 @@ if ($t.YouTube) { Write-Host '[+] YouTube: работает' -ForegroundColor Gr
 if ($t.Discord) { Write-Host '[+] Discord: работает' -ForegroundColor Green } else { Write-Host '[x] Discord: НЕ работает' -ForegroundColor Red }
 if ($t.Media) { Write-Host '[+] Картинки Discord: работают' -ForegroundColor Green } else { Write-Host '[x] Картинки Discord: НЕ работают' -ForegroundColor Red }
 
+# update availability
+$null = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'check-updates.ps1') -InfoOnly
+
 if ($procs.Count -eq 0) { exit 1 }
 if (-not ($t.YouTube -and $t.Discord)) { exit 2 }
 exit 0
