@@ -1,11 +1,17 @@
 ﻿# tune.ps1 - automatically find a working strategy by trying them one by one
+# -Fast: ~2-3s per strategy instead of ~7s (less precise checks)
+# -From / -To: test only strategies in this number range
+param([int]$From = 0, [int]$To = 0, [switch]$Fast)
 . (Join-Path $PSScriptRoot 'common.ps1')
 Assert-Admin
 $ErrorActionPreference = 'Continue'
 
 $cfg = Read-Config
 $timeout = 4
-if ($cfg.ContainsKey('CHECK_TIMEOUT')) { try { $timeout = [Math]::Min(4, [int]$cfg.CHECK_TIMEOUT) } catch { } }
+if ($Fast) { $timeout = 2 }
+if (-not $Fast -and $cfg.ContainsKey('CHECK_TIMEOUT')) { try { $timeout = [Math]::Min(4, [int]$cfg.CHECK_TIMEOUT) } catch { } }
+$waitSec = 2
+if ($Fast) { $waitSec = 1 }
 $ipset = $true
 if ($cfg.ContainsKey('IPSET')) { $ipset = ($cfg.IPSET -eq '1') }
 Set-IpsetActive -On $ipset
@@ -42,8 +48,10 @@ $tried = 0
 $report = @("tune $(Get-Date -Format 'yyyy-MM-dd HH:mm')  baseline=$($base.Score)/6")
 
 foreach ($s in $strats) {
+    if ($From -gt 0 -and $s.Num -lt $From) { continue }
+    if ($To -gt 0 -and $s.Num -gt $To) { continue }
     $tried++
-    $r = Start-Zapret -Num $s.Num -WaitSec 2
+    $r = Start-Zapret -Num $s.Num -WaitSec $waitSec
     if (-not $r.Ok) {
         $line = ('{0:D2} {1} -> ОШИБКА СТАРТА' -f $s.Num, $s.Name)
         Write-Host ('  {0}' -f $line) -ForegroundColor DarkYellow
