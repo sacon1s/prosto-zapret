@@ -1,4 +1,4 @@
-# Zapret Pro
+# Prosto Zapret
 
 Улучшенная и проработанная версия **zapret-discord-youtube** (Flowseal) с автоматизацией.
 Обход блокировок **Discord, YouTube и других сервисов без VPN** — через модификацию пакетов
