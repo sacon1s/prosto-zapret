@@ -1,0 +1,25 @@
+﻿# remove-autostart.ps1 - remove scheduled task, stop guardian and winws
+. (Join-Path $PSScriptRoot 'common.ps1')
+Assert-Admin
+$ErrorActionPreference = 'Continue'
+
+$taskName = 'ZapretPro'
+$task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+if ($task) {
+    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+    Write-Host '[+] Задача автозапуска удалена.' -ForegroundColor Green
+} else {
+    Write-Host '[i] Задача автозапуска не найдена.' -ForegroundColor DarkGray
+}
+
+$g = @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*autostart.ps1*' })
+foreach ($p in $g) {
+    Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+    Write-Host ('[+] Сторож остановлен (PID {0}).' -f $p.ProcessId) -ForegroundColor Green
+}
+
+$n = Stop-Zapret
+if ($n -gt 0) { Write-Host '[+] zapret остановлен.' -ForegroundColor Green }
+Write-Log 'autostart task removed'
+exit 0
