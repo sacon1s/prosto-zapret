@@ -20,6 +20,10 @@ if ($exist) {
     Write-Host '[i] Старая задача автозапуска удалена (обновляем).' -ForegroundColor DarkGray
 }
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal | Out-Null
+# kill any leftover guardian processes so the fresh instance is guaranteed to start
+Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -like '*autostart.ps1*' } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 
 # stop a guardian left from a previous install location so the new one takes over
 Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |

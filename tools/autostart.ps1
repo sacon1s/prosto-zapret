@@ -1,9 +1,11 @@
 ﻿# autostart.ps1 - resident guardian with tray icon: keeps zapret running and healthy.
 # Started hidden by the scheduled task ("3 - АВТОЗАПУСК.bat"). WinForms message pump keeps tray alive.
 . (Join-Path $PSScriptRoot 'common.ps1')
+Write-Log 'boot: common loaded' $logFile
 $ErrorActionPreference = 'Continue'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Write-Log 'boot: winforms assemblies loaded' $logFile
 
 $logFile = 'guardian.log'
 $script:initialDelay = 15
@@ -165,6 +167,7 @@ if ($others.Count -gt 0) {
     Write-Log ('another guardian found (pid {0}) - exiting' -f $others[0].ProcessId) $logFile
     exit 0
 }
+Write-Log 'boot: duplicate check passed' $logFile
 
 # ---------- tray (with fallback to plain loop if WinForms unavailable) ----------
 function Invoke-GuardianLoopFallback {
@@ -283,6 +286,7 @@ try {
     $timer.Interval = $script:stepMs
     $timer.Add_Tick({ Invoke-GuardianStep })
     $timer.Start()
+    Write-Log 'boot: tray created, message pump starting' $logFile
 } catch {
     Write-Log ('tray init failed: {0}' -f $_.Exception.Message) $logFile
 }
