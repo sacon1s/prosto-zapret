@@ -41,6 +41,11 @@ Write-Host ''
 if ($t.YouTube) { Write-Host '[+] YouTube: доступен' -ForegroundColor Green } else { Write-Host '[x] YouTube: недоступен' -ForegroundColor Red }
 if ($t.Discord) { Write-Host '[+] Discord: доступен (web + gateway)' -ForegroundColor Green } else { Write-Host '[x] Discord: недоступен' -ForegroundColor Red }
 
+# real video stream bytes
+$stream = Test-YouTubeStream
+if ($stream.Ok) { Write-Host ('[+] Видеопоток YouTube: работает ({0} КБ получено)' -f [math]::Round($stream.Bytes / 1KB)) -ForegroundColor Green }
+else { Write-Host ('[~] Видеопоток YouTube: не подтвердился ({0})' -f $(if ($stream.Note) { $stream.Note } else { 'HTTP ' + $stream.Code })) -ForegroundColor Yellow }
+
 # DNS hint
 Write-Host ''
 $dnsOk = $true

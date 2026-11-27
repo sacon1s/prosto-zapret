@@ -311,3 +311,46 @@ function Get-CheckVerdictLine {
 function Clear-DnsCache {
     try { Clear-DnsClientCache -ErrorAction SilentlyContinue } catch { }
 }
+
+# ---------- toasts ----------
+function Show-Toast {
+    param([string]$Title, [string]$Text)
+    try {
+        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+        $t = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+        $txt = $t.GetElementsByTagName('text')
+        [void]$txt.Item(0).AppendChild($t.CreateTextNode($Title))
+        [void]$txt.Item(1).AppendChild($t.CreateTextNode($Text))
+        $n = [Windows.UI.Notifications.ToastNotification]::new($t)
+        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe').Show($n)
+    } catch { }
+}
+
+# ---------- real YouTube stream flow check ----------
+function Test-YouTubeStream {
+    # innertube player -> googlevideo range request; proves actual video bytes flow, not just the site
+    $res = @{ Ok = $false; Code = '000'; Bytes = 0; Ms = -1; Note = '' }
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $body = '{"context":{"client":{"clientName":"ANDROID","clientVersion":"19.09.37","androidSdkVersion":30,"hl":"ru"}},"videoId":"dQw4w9WgXcQ","contentCheckOk":true,"racyCheckOk":true}'
+        $resp = Invoke-RestMethod -Uri 'https://www.youtube.com/youtubei/v1/player?key=AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w' -Method Post -Body $body -ContentType 'application/json' -TimeoutSec 10
+        $fmt = $null
+        if ($resp.streamingData -and $resp.streamingData.formats) { $fmt = @($resp.streamingData.formats)[0] }
+        if (-not $fmt -and $resp.streamingData -and $resp.streamingData.adaptiveFormats) {
+            $fmt = @($resp.streamingData.adaptiveFormats | Where-Object { $_.url } | Select-Object -First 1)
+        }
+        if (-not $fmt -or -not $fmt.url) { $res.Note = 'player: no stream url'; return $res }
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        $out = & curl.exe -4 -s -o NUL -m 15 --connect-timeout 8 -r 0-100000 $fmt.url -w '%{http_code} %{size_download}' 2>$null
+        $sw.Stop()
+        $res.Ms = [int]$sw.ElapsedMilliseconds
+        $parts = (($out | Out-String).Trim() -split '\s+')
+        if ($parts.Count -ge 2) {
+            $res.Code = $parts[0]
+            [void][int]::TryParse($parts[1], [ref]$res.Bytes)
+        }
+        $res.Ok = (($res.Code -eq '200') -or ($res.Code -eq '206')) -and ($res.Bytes -gt 50000)
+        if (-not $res.Ok) { $res.Note = ('googlevideo HTTP ' + $res.Code) }
+    } catch { $res.Note = $_.Exception.Message }
+    return $res
+}

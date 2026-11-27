@@ -49,6 +49,22 @@ if ($t.YouTube) { Write-Host '[+] YouTube: работает' -ForegroundColor Gr
 if ($t.Discord) { Write-Host '[+] Discord: работает' -ForegroundColor Green } else { Write-Host '[x] Discord: НЕ работает' -ForegroundColor Red }
 if ($t.Media) { Write-Host '[+] Картинки Discord: работают' -ForegroundColor Green } else { Write-Host '[x] Картинки Discord: НЕ работают' -ForegroundColor Red }
 
+# real video bytes test
+Write-Host 'Проверка видеопотока (реальные байты с googlevideo)...' -ForegroundColor DarkGray
+$stream = Test-YouTubeStream
+if ($stream.Ok) { Write-Host ('[+] Видеопоток YouTube: работает ({0} КБ за {1} мс)' -f [math]::Round($stream.Bytes / 1KB), $stream.Ms) -ForegroundColor Green }
+else { Write-Host ('[x] Видеопоток YouTube: НЕ работает ({0})' -f $(if ($stream.Note) { $stream.Note } else { 'HTTP ' + $stream.Code })) -ForegroundColor Red }
+
+# strategy history (last 24h)
+$csv = Join-Path $LogsDir 'strategy-history.csv'
+if (Test-Path $csv) {
+    $rows = @(Get-Content $csv -EA SilentlyContinue | Where-Object { $_ -match '^\d{4}-' })
+    $today = @($rows | Where-Object { $_ -match ((Get-Date).ToString('yyyy-MM-dd')) })
+    $last = ''
+    if ($rows.Count -gt 0) { $last = ($rows[-1] -split ',')[0..2] -join ' | ' }
+    Write-Host ('Статистика: событий за сегодня {0}, всего {1}; последнее: {2}' -f $today.Count, $rows.Count, $last) -ForegroundColor DarkGray
+}
+
 # update availability
 $null = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'check-updates.ps1') -InfoOnly
 
