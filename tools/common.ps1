@@ -63,20 +63,23 @@ function Read-Config {
 }
 
 function Set-ConfigKey {
+    # UTF-8 in and out (keeps Cyrillic comments) and a replace instead of an in-place rewrite,
+    # so a reader never sees a half-written file.
     param([string]$Key, [string]$Value)
     $Key = $Key.ToUpper()
-    $lines = @()
-    if (Test-Path $ConfigFile) { $lines = @(Get-Content $ConfigFile) }
+    $lines = New-Object System.Collections.Generic.List[string]
+    try { if ([IO.File]::Exists($ConfigFile)) { foreach ($l in [IO.File]::ReadAllLines($ConfigFile, [Text.Encoding]::UTF8)) { $lines.Add($l) } } } catch { }
     $found = $false
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        if ($lines[$i] -match '^\s*' + [regex]::Escape($Key) + '\s*=') {
-            $lines[$i] = "$Key=$Value"
-            $found = $true
-            break
-        }
+        if ($lines[$i] -match '^\s*' + [regex]::Escape($Key) + '\s*=') { $lines[$i] = "$Key=$Value"; $found = $true; break }
     }
-    if (-not $found) { $lines += "$Key=$Value" }
-    $lines | Set-Content $ConfigFile -Encoding ASCII
+    if (-not $found) { $lines.Add("$Key=$Value") }
+    try {
+        $tmp = $ConfigFile + '.tmp'
+        [IO.File]::WriteAllLines($tmp, $lines, (New-Object Text.UTF8Encoding($false)))
+        if ([IO.File]::Exists($ConfigFile)) { [IO.File]::Delete($ConfigFile) }
+        [IO.File]::Move($tmp, $ConfigFile)
+    } catch { }
 }
 
 # ---------- logging ----------
