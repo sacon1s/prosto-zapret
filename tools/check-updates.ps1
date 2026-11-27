@@ -64,10 +64,23 @@ if ($InfoOnly) {
 
 Write-Host ''
 Write-Host ('[*] Доступен новый апдейт: ' + $tag + ' (у вас ' + $localVer + ')') -ForegroundColor Cyan
-$answer = Read-Host 'Скачать и установить сейчас? [Y/N]'
-if ($answer -notmatch '^[YyДд]') {
-    Set-ConfigKey -Key 'SKIPPED_VERSION' -Value $tag
-    Write-Host '[i] Хорошо, напомню при следующем апдейте.' -ForegroundColor DarkGray
+Write-Host 'Скачать сейчас? Нажмите Y (да) или N (позже) - есть 20 секунд...' -ForegroundColor Cyan
+$answer = 'timeout'
+try {
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while ($sw.Elapsed.TotalSeconds -lt 20) {
+        if ([Console]::KeyAvailable) {
+            $k = [Console]::ReadKey($true)
+            if ($k.Key -in @('Y', 'D')) { $answer = 'y'; break }
+            if ($k.Key -eq 'N') { $answer = 'n'; break }
+        }
+        Start-Sleep -Milliseconds 120
+    }
+} catch { $answer = 'timeout' }
+
+if ($answer -ne 'y') {
+    if ($answer -eq 'n') { Set-ConfigKey -Key 'SKIPPED_VERSION' -Value $tag }  # explicit N - stop nagging until next version
+    Write-Host '[i] Хорошо, продолжаю без обновления.' -ForegroundColor DarkGray
     exit 0
 }
 

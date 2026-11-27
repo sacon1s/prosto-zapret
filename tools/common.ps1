@@ -12,6 +12,21 @@ $ScriptVersion = '1.0.0'
 
 if (-not (Test-Path $LogsDir)) { New-Item -ItemType Directory -Path $LogsDir | Out-Null }
 
+# ---------- console: disable QuickEdit (mouse click freezes output until Enter) ----------
+function Disable-QuickEdit {
+    try {
+        if ($Host.Name -ne 'ConsoleHost') { return }
+        $sig = 'using System;using System.Runtime.InteropServices;public static class QEMode{[DllImport("kernel32.dll",SetLastError=true)]public static extern IntPtr GetStdHandle(int h);[DllImport("kernel32.dll",SetLastError=true)]public static extern bool GetConsoleMode(IntPtr h,out uint m);[DllImport("kernel32.dll",SetLastError=true)]public static extern bool SetConsoleMode(IntPtr h,uint m);}'
+        $qe = Add-Type -MemberDefinition $sig -Name 'QEMode' -Namespace 'Win32' -PassThru
+        $h = $qe::GetStdHandle(-10)
+        $m = [uint32]0
+        [void]$qe::GetConsoleMode($h, [ref]$m)
+        $m = ($m -band ([uint32]'0xFFFFFFFF' -bxor 0x1)) -bor 0x80
+        [void]$qe::SetConsoleMode($h, $m)
+    } catch { }
+}
+Disable-QuickEdit
+
 # ---------- admin ----------
 function Test-Admin {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
