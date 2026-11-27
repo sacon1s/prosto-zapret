@@ -23,6 +23,13 @@ Write-Host ''
 Write-Host '=== Zapret Pro: автоподбор стратегии ===' -ForegroundColor Cyan
 Write-Host ('Стратегий в библиотеке: {0}. Это может занять 1-3 минуты.' -f $strats.Count) -ForegroundColor DarkGray
 
+$tun = Get-TunnelState
+if ($tun.Active) {
+    Write-Host ('[!] Включён туннель: ' + (Get-TunnelText -T $tun)) -ForegroundColor Yellow
+    Write-Host '    Через VPN любая стратегия даст «всё работает» - подбор будет ложным.' -ForegroundColor Yellow
+    Write-Host '    Отключите VPN и запустите подбор ещё раз. Сохранённая стратегия не изменена.' -ForegroundColor Yellow
+    exit 1
+}
 # baseline: what works WITHOUT zapret
 Write-Host ''
 Write-Host 'Шаг 1. Проверка без обхода (базовая линия)...' -ForegroundColor DarkGray

@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="ru" data-type="software">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prosto Zapret — Discord и YouTube без VPN</title>
+<meta name="description" content="Prosto Zapret сам подбирает рабочую стратегию обхода блокировок Discord и YouTube без VPN, следит за доступом и чинит его. Папка из пяти файлов для Windows 10 и 11.">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="software">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Prosto Zapret — Discord и YouTube без VPN">
+<meta property="og:description" content="Подбор стратегии обхода, сторож и значок в трее. Папка из пяти файлов для Windows.">
+<meta property="og:url" content="https://github.com/sacon1s/prosto-zapret">
+<meta name="theme-color" content="#0A101F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='14' fill='%2334D399'/%3E%3Cpath d='M36 6 19 36h10l-5 22 22-30H36l10-22z' fill='%230F172A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A101F; --bg-app:#0F172A; --surface:#111A2E; --surface-2:#18233A;
+  --line:rgba(230,235,242,.08); --line-strong:rgba(230,235,242,.2);
+  --text:#E6EBF2; --text-2:#ABB6C8; --text-3:#8491A6;
+  --accent:#34D399; --accent-hover:#4AE3AC; --accent-ink:#052A1C;
+  --amber:#FBBF24; --off:#64748B;
+  --font:"Golos Text","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --ui:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --r-control:8px; --r-card:14px; --r-panel:16px;
+  --ease:cubic-bezier(.2,0,0,1); --d-fast:120ms; --d-in:320ms;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit;text-decoration:none}
+code{font-family:var(--mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+.skip{position:absolute;left:16px;top:-72px;z-index:20;padding:12px 16px;border-radius:var(--r-control);background:var(--accent);color:var(--accent-ink);font-weight:500;transition:top var(--d-fast) var(--ease)}
+.skip:focus{top:12px}
+.tile{display:block;flex:none}
+h1,h2{font-weight:500}
+h1{font-size:clamp(40px,5.2vw,56px);line-height:1.06;letter-spacing:-.02em}
+h2{font-size:clamp(32px,3.4vw,44px);line-height:1.14;letter-spacing:-.01em}
+h3{font-size:20px;line-height:1.3;font-weight:500}
+.lead{font-size:20px;line-height:1.55;color:var(--text-2)}
+.mono{font-family:var(--mono);font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums;color:var(--text-3)}
+
+/* ---------- buttons and links ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:48px;padding:0 24px;border:1px solid transparent;border-radius:var(--r-control);font:500 16px/1 var(--font);cursor:pointer;white-space:nowrap;transition:background-color var(--d-fast) var(--ease),border-color var(--d-fast) var(--ease),transform var(--d-fast) var(--ease)}
+.btn:active{transform:scale(.98)}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-ghost{border-color:var(--line-strong);color:var(--text)}
+.btn-ghost:hover{border-color:rgba(230,235,242,.4);background:rgba(230,235,242,.05)}
+.btn-sm{height:40px;padding:0 16px;font-size:15px}
+.link{background:linear-gradient(currentColor,currentColor) no-repeat 0 100%/0 1px;transition:background-size var(--d-fast) var(--ease)}
+.link:hover{background-size:100% 1px}
+
+/* ---------- nav ---------- */
+.nav{height:72px}
+.nav .wrap{display:flex;align-items:center;gap:8px;height:100%}
+.brand{display:flex;align-items:center;gap:12px;font-size:18px;font-weight:500}
+.brand .tile{width:28px;height:28px}
+.nav-links{display:flex;gap:28px;margin-left:24px;color:var(--text-2);font-size:15px}
+.nav-links a:hover{color:var(--text)}
+.nav .btn{margin-left:auto}
+.nav .repo{margin-left:auto;display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;border:1px solid var(--line-strong);border-radius:var(--r-control);font-size:15px;transition:border-color var(--d-fast) var(--ease),background-color var(--d-fast) var(--ease)}
+.nav .repo svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.nav .repo:hover{border-color:rgba(230,235,242,.4);background:rgba(230,235,242,.05)}
+.nav .repo+.btn{margin-left:12px}
+
+/* ---------- hero ---------- */
+.hero{border-bottom:1px solid var(--line);overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,10fr) minmax(0,11fr);gap:64px;align-items:center;min-height:calc(100vh - 73px);min-height:calc(100svh - 73px);padding-top:40px;padding-bottom:64px}
+.flat .hero .wrap{min-height:0}
+html.flat{scroll-behavior:auto}
+.hero-copy{display:flex;flex-direction:column;align-items:flex-start;gap:24px}
+.hero-copy .mono{color:var(--accent)}
+.hero-copy .lead{max-width:30em}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.stats{display:flex;flex-wrap:wrap;gap:16px 40px;margin-top:24px}
+.stats b{display:block;font-size:24px;line-height:1.3;font-weight:500;font-variant-numeric:tabular-nums}
+.stats span{font-size:14px;color:var(--text-3)}
+[data-enter]{animation:rise var(--d-in) var(--ease) both;animation-delay:calc(var(--i,0)*60ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+
+/* the real status window, rebuilt in HTML */
+.appwin{width:100%;max-width:520px;justify-self:end;border-radius:10px;overflow:hidden;background:var(--bg-app);border:1px solid #3A4558;box-shadow:0 24px 48px rgba(0,0,0,.5);font-family:var(--ui)}
+.appwin-bar{display:flex;align-items:center;gap:8px;height:36px;padding:0 14px 0 12px;background:#F3F3F3;color:#1B1B1B;font-size:13px}
+.appwin-bar .tile{width:16px;height:16px}
+.appwin-x{margin-left:auto;width:18px;text-align:center;color:#5C5C5C}
+.appwin-body{padding:24px;color:#E2E8F0}
+.appwin-head{display:flex;align-items:center;gap:16px}
+.appwin-head .tile{width:44px;height:44px}
+.appwin-head b{display:block;font-size:20px;line-height:1.2;font-weight:600}
+.appwin-head small{font-size:13px;color:#94A3B8}
+.appwin-state{display:flex;align-items:center;gap:10px;margin:16px 0 8px;font-size:18px;line-height:1.5;font-weight:600;color:var(--accent)}
+.appwin-state i{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.appwin-rows div{display:grid;grid-template-columns:76px 1fr;gap:8px;font-size:14px;line-height:1.45}
+.appwin-rows dt{color:#E2E8F0}
+.appwin-rows dd{color:#E2E8F0}
+.appwin-msg{margin:12px 0 16px;font-size:15px;font-style:italic;color:var(--accent)}
+.appwin-btns{display:flex;flex-wrap:wrap;gap:8px}
+.appwin-btns span{padding:0 16px;height:34px;display:inline-flex;align-items:center;border:1px solid #334155;border-radius:4px;background:#1E293B;font-size:14px}
+
+/* ---------- sections ---------- */
+main>section{padding:112px 0}
+main>section+section{border-top:1px solid var(--line)}
+main>section.hero{padding:0}
+.sec-head{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:24px 64px;align-items:end;margin-bottom:48px}
+.sec-head p{font-size:18px;line-height:1.6;color:var(--text-2)}
+
+/* files */
+.files li{display:grid;grid-template-columns:48px minmax(0,320px) 1fr;align-items:center;gap:24px;min-height:76px;padding:12px 16px;border-top:1px solid var(--line);border-radius:var(--r-control);transition:background-color var(--d-fast) var(--ease)}
+.files li:last-child{border-bottom:1px solid var(--line)}
+.files li:hover{background:var(--surface)}
+.files .n{font-family:var(--mono);font-size:14px;color:var(--text-3)}
+.files code{font-size:15px;color:var(--text)}
+.files .what{font-size:16px;color:var(--text-2)}
+.files .quiet code,.files .quiet .what,.files .quiet .n{color:var(--text-3)}
+
+/* how it works */
+.panel{padding:32px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel)}
+.diagram svg{display:block;width:100%;height:auto}
+.diagram .box{fill:var(--bg-app);stroke:var(--line-strong)}
+.diagram .t1{fill:var(--text);font:500 16px var(--font)}
+.diagram .t2,.diagram .lab{fill:var(--text-3);font:400 13px var(--font)}
+.diagram .lab.on{fill:var(--accent)}
+.diagram .wire{stroke-width:2;fill:none}
+.diagram .wire.off{stroke:var(--off);stroke-dasharray:6 6}
+.diagram .wire.ghost{stroke:var(--off);stroke-dasharray:2 8;opacity:.5}
+.diagram .wire.on{stroke:var(--accent)}
+.diagram .wire.faint{opacity:.35;stroke-dasharray:6 6}
+.diagram .xmark{stroke:var(--off);stroke-width:2;fill:none;stroke-linecap:round}
+.diagram .pkt{fill:var(--accent);offset-rotate:0deg;offset-distance:46%}
+.diagram .pkt.b{offset-distance:54%}
+.diagram:hover .pkt,.diagram:focus-within .pkt{animation:run 1.8s linear infinite}
+.diagram .pkt.b{animation-delay:.6s}
+@keyframes run{from{offset-distance:0%}to{offset-distance:100%}}
+.diagram-m{display:none}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px}
+.steps li{display:flex;flex-direction:column;gap:8px}
+.steps .n{font-family:var(--mono);font-size:14px;color:var(--text-3)}
+.steps p{color:var(--text-2)}
+
+/* features */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{grid-column:span 4;display:flex;flex-direction:column;gap:12px;min-height:340px;padding:24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card)}
+.card.w8{grid-column:span 8}
+.card p{color:var(--text-2)}
+.card .visual{margin-top:auto;padding-top:16px}
+.sweep{font-family:var(--mono);font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+.sweep div{display:grid;grid-template-columns:max-content minmax(0,1fr) auto;gap:16px;align-items:center;min-height:44px;padding:0 16px;border-top:1px solid var(--line);color:var(--text-3)}
+.sweep div:first-child{border-top:0}
+.sweep .pick{background:var(--bg-app);border-top:1px solid var(--line-strong);border-radius:var(--r-control);color:var(--text)}
+.sweep .pick em{font-style:normal;color:var(--accent)}
+.tiles{display:grid;gap:12px}
+.tiles li{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text-2)}
+.tiles .tile{width:24px;height:24px}
+.chat{display:flex;align-items:center;gap:12px;padding:16px;border-radius:var(--r-control);background:var(--bg-app);border:1px solid var(--line)}
+.chat .pic{display:flex;align-items:center;justify-content:center;width:64px;height:56px;border:1px solid var(--accent);border-radius:6px;color:var(--accent)}
+.chat .pic svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.chat code{font-size:13px;color:var(--text-2)}
+.routes div{display:grid;grid-template-columns:12px 1fr auto;gap:12px;align-items:center;min-height:40px;font-size:14px;color:var(--text-2);border-top:1px solid var(--line)}
+.routes div:first-child{border-top:0}
+.routes i{width:10px;height:10px;border-radius:3px;background:var(--off)}
+.routes .yes i{background:var(--accent)}
+.routes .wait i{background:var(--amber)}
+.routes code{font-size:13px;color:var(--text-3)}
+.prompt{padding:16px;border-radius:var(--r-control);background:var(--bg-app);border:1px solid var(--line);font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--text-2)}
+.prompt b{font-weight:500;color:var(--accent)}
+.prompt em{font-style:normal;color:var(--text)}
+
+/* faq */
+.faq{max-width:880px}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:76px;padding:20px 8px;font-size:20px;font-weight:500;list-style:none;cursor:pointer;transition:color var(--d-fast) var(--ease)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:#fff}
+.faq .plus{position:relative;flex:none;width:20px;height:20px;transition:transform var(--d-fast) var(--ease)}
+.faq .plus::before,.faq .plus::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:2px;margin:-1px 0 0 -8px;border-radius:1px;background:var(--text-3)}
+.faq .plus::after{transform:rotate(90deg)}
+.faq details[open] .plus{transform:rotate(45deg)}
+.faq details p{max-width:720px;padding:0 8px 24px;color:var(--text-2)}
+
+/* download */
+.cta{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:64px;align-items:center;padding:64px;background:var(--bg-app);border:1px solid var(--line);border-radius:20px}
+.cta .lead{margin:16px 0 32px}
+.cta .lead{max-width:26em}
+.cta .hero-actions{margin-top:0}
+.release{font-size:15px}
+.release div{display:grid;grid-template-columns:96px 1fr;gap:16px;min-height:48px;align-items:center;border-top:1px solid var(--line)}
+.release div:first-child{border-top:0}
+.release dt{color:var(--text-3)}
+.release dd{font-variant-numeric:tabular-nums}
+.release code{font-size:14px}
+
+/* footer */
+.foot{padding:48px 0 64px}
+.foot .top{display:flex;flex-wrap:wrap;align-items:center;gap:16px 32px;padding-bottom:32px;border-bottom:1px solid var(--line)}
+.foot .links{display:flex;flex-wrap:wrap;gap:24px;margin-left:auto;color:var(--text-2);font-size:15px}
+.foot .credit{margin-top:24px;max-width:62em;font-size:14px;line-height:1.7;color:var(--text-3)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1087px){
+  .hero .wrap{gap:48px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  h1{font-size:clamp(40px,5vw,56px)}
+  .nav-links{display:none}
+}
+@media (max-width:1023px){
+  .card,.card.w8{grid-column:span 6}
+  .sec-head{grid-template-columns:1fr}
+  .files li{grid-template-columns:32px minmax(0,1fr)}
+  .files .what{grid-column:2}
+  .cta{grid-template-columns:1fr;gap:40px;padding:48px}
+}
+@media (max-width:799px){
+  .hero .wrap{grid-template-columns:1fr;gap:48px;min-height:0;padding-top:16px;padding-bottom:64px}
+  .appwin{justify-self:stretch;max-width:none}
+  .diagram{display:none}
+  .diagram-m{display:grid;gap:12px}
+  .diagram-m div{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:16px;border-radius:var(--r-control);background:var(--bg-app);border:1px solid var(--line);font-size:14px;color:var(--text-2)}
+  .diagram-m i{width:10px;height:10px;border-radius:50%;background:var(--off)}
+  .diagram-m .on i{background:var(--accent)}
+  .diagram-m b{font-weight:500;color:var(--text)}
+  .diagram-m .on b{color:var(--accent)}
+  .steps{grid-template-columns:1fr;gap:24px}
+  .stats{gap:16px 32px}
+}
+@media (max-width:679px){
+  .wrap{padding:0 24px}
+  main>section{padding:72px 0}
+  .card,.card.w8{grid-column:span 12;min-height:0}
+  .faq summary{font-size:18px}
+  .cta{padding:32px}
+  .release div{grid-template-columns:1fr;gap:4px;padding:12px 0}
+  .foot .links{margin-left:0}
+}
+@media (max-width:479px){
+  h1{font-size:40px}
+  .lead{font-size:18px}
+  .hero-actions .btn{flex:1 1 100%}
+  .nav .repo span{display:none}
+  .appwin-body{padding:20px 16px}
+  .appwin-rows div{grid-template-columns:1fr;gap:0}
+  .appwin-rows dt{color:#94A3B8}
+  .cta .hero-actions .btn{flex:1 1 100%}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">К содержимому</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#34D399"/><path d="M36 6 19 36h10l-5 22 22-30H36l10-22z" fill="#0F172A"/></svg>
+      Prosto Zapret
+    </a>
+    <nav class="nav-links" aria-label="Разделы">
+      <a class="link" href="#files">Файлы</a>
+      <a class="link" href="#how">Как работает</a>
+      <a class="link" href="#features">Что делает</a>
+      <a class="link" href="#faq">Вопросы</a>
+    </nav>
+    <a class="repo" href="https://github.com/sacon1s/prosto-zapret">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+      <span>GitHub</span>
+    </a>
+    <a class="btn btn-primary btn-sm" href="https://github.com/sacon1s/prosto-zapret/releases/latest">Скачать</a>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="hero" id="top" aria-labelledby="h-hero">
+  <div class="wrap">
+    <div class="hero-copy">
+      <p class="mono" data-enter style="--i:0">Windows 10 и 11 · без VPN · без чужих серверов</p>
+      <h1 id="h-hero" data-enter style="--i:1">Discord и YouTube без&nbsp;VPN</h1>
+      <p class="lead" data-enter style="--i:2">Prosto Zapret сам находит рабочую стратегию обхода, следит за доступом и чинит его, пока вы смотрите, играете и переписываетесь.</p>
+      <div class="hero-actions" data-enter style="--i:3">
+        <a class="btn btn-primary" href="https://github.com/sacon1s/prosto-zapret/releases/latest">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Скачать для Windows
+        </a>
+        <a class="btn btn-ghost" href="#how">Как это работает</a>
+      </div>
+      <div class="stats" data-enter style="--i:4">
+        <div class="stat"><b>119</b><span>стратегий обхода</span></div>
+        <div class="stat"><b>3 мин</b><span>между проверками</span></div>
+        <div class="stat"><b>5</b><span>файлов в папке</span></div>
+      </div>
+    </div>
+
+    <div class="appwin" role="group" aria-label="Окно статуса Prosto Zapret" data-enter style="--i:2">
+      <div class="appwin-bar">
+        <svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#34D399"/><path d="M36 6 19 36h10l-5 22 22-30H36l10-22z" fill="#0F172A"/></svg>
+        <span>Prosto Zapret</span><span class="appwin-x" aria-hidden="true">×</span>
+      </div>
+      <div class="appwin-body">
+        <div class="appwin-head">
+          <svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#34D399"/><path d="M36 6 19 36h10l-5 22 22-30H36l10-22z" fill="#0F172A"/></svg>
+          <div><b>Prosto Zapret</b><small><span data-ver>v0.0.3</span> · сторож</small></div>
+        </div>
+        <p class="appwin-state"><i aria-hidden="true"></i>Обход работает</p>
+        <dl class="appwin-rows">
+          <div><dt>Стратегия</dt><dd>03 · general (ALT11)</dd></div>
+          <div><dt>Проверка</dt><dd>02:10 — всё работает: YouTube, Discord, картинки</dd></div>
+          <div><dt>Туннель</dt><dd>нет, ExitLag запущен — совместим</dd></div>
+        </dl>
+        <p class="appwin-msg">Проверка: всё работает</p>
+        <div class="appwin-btns"><span>Включить</span><span>Пауза</span><span>Проверить сейчас</span><span>Подбор…</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="files" aria-labelledby="h-files">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="h-files">Папка из пяти файлов</h2>
+      <p>Никаких установщиков и меню из двадцати пунктов. Распакуйте архив и запускайте файл по номеру.</p>
+    </div>
+    <ol class="files">
+      <li><span class="n">1</span><code>1 - ВКЛЮЧИТЬ ЗАПРЕТ.bat</code><span class="what">Включить обход. Первый запуск сам настроит всё остальное</span></li>
+      <li><span class="n">2</span><code>2 - ВЫКЛЮЧИТЬ ЗАПРЕТ.bat</code><span class="what">Выключить обход вместе со сторожем, чтобы тот не запустил его снова</span></li>
+      <li><span class="n">3</span><code>3 - АВТОЗАПУСК.bat</code><span class="what">Поставить на автозапуск с компьютером. Повторный запуск снимает</span></li>
+      <li><span class="n">4</span><code>4 - СТАТУС.bat</code><span class="what">Показать, работает ли обход прямо сейчас</span></li>
+      <li><span class="n">5</span><code>5 - ПОДБОР НАСТРОЕК.bat</code><span class="what">Перебрать стратегии по очереди и сохранить рабочую</span></li>
+      <li class="quiet"><span class="n">+</span><code>extra</code><span class="what">Обновление, диагностика, DNS и полное удаление на случай, если понадобятся</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="how" aria-labelledby="h-how">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="h-how">Как работает обход</h2>
+      <p>Данные не уходят на чужие серверы и не едут через туннель. Меняется только вид первых пакетов, и фильтр провайдера не понимает, к какому сайту вы идёте.</p>
+    </div>
+    <div class="panel">
+      <figure class="diagram" tabindex="0" role="img" aria-label="Обычный запрос фильтр провайдера отбрасывает. Запрос через Prosto Zapret фильтр не распознаёт, и Discord с YouTube открываются. Проведите по схеме, чтобы увидеть движение пакетов.">
+        <svg viewBox="0 0 880 172">
+          <rect class="box" x="0" y="30" width="176" height="140" rx="14"/>
+          <rect class="box" x="352" y="30" width="176" height="140" rx="14"/>
+          <rect class="box" x="704" y="30" width="176" height="140" rx="14"/>
+          <text class="t1" x="88" y="62" text-anchor="middle">Ваш ПК</text>
+          <text class="t2" x="88" y="150" text-anchor="middle">Discord и браузер</text>
+          <text class="t1" x="440" y="62" text-anchor="middle">Фильтр провайдера</text>
+          <text class="t2" x="440" y="150" text-anchor="middle">не узнаёт адрес</text>
+          <text class="t1" x="792" y="62" text-anchor="middle">Discord · YouTube</text>
+          <text class="t2" x="792" y="150" text-anchor="middle">открываются</text>
+
+          <line class="wire off" x1="176" y1="90" x2="352" y2="90"/>
+          <line class="wire ghost" x1="528" y1="90" x2="704" y2="90"/>
+          <path class="xmark" d="M433 83l14 14M447 83l-14 14"/>
+          <text class="lab" x="264" y="80" text-anchor="middle">обычный запрос</text>
+          <text class="lab" x="616" y="80" text-anchor="middle">отброшен</text>
+
+          <line class="wire on" x1="176" y1="118" x2="352" y2="118"/>
+          <line class="wire on faint" x1="352" y1="118" x2="528" y2="118"/>
+          <line class="wire on" x1="528" y1="118" x2="704" y2="118"/>
+          <text class="lab on" x="264" y="142" text-anchor="middle">через Prosto Zapret</text>
+          <text class="lab on" x="616" y="142" text-anchor="middle">проходит</text>
+          <circle class="pkt" r="5" style="offset-path:path('M176 118H352')"/>
+          <circle class="pkt b" r="5" style="offset-path:path('M528 118H704')"/>
+        </svg>
+      </figure>
+      <div class="diagram-m">
+        <div><i aria-hidden="true"></i><b>Обычный запрос</b> ваш ПК → фильтр провайдера → отброшен</div>
+        <div class="on"><i aria-hidden="true"></i><b>Через Prosto Zapret</b> фильтр не узнаёт адрес → Discord и YouTube открываются</div>
+      </div>
+    </div>
+    <ol class="steps">
+      <li><span class="n">01</span><h3>Перехватывает только нужное</h3><p>Обход трогает пакеты к заблокированным сайтам. Игры, торренты и остальные страницы идут как шли.</p></li>
+      <li><span class="n">02</span><h3>Меняет вид первого пакета</h3><p>Запрос разбивается и маскируется под другой. Фильтр пропускает его, а сайт получает всё как было.</p></li>
+      <li><span class="n">03</span><h3>Следит за результатом</h3><p>Каждые три минуты проверяет YouTube, Discord и картинки. Если доступ пропал, меняет стратегию сам.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section id="features" aria-labelledby="h-feat">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="h-feat">Что делает само</h2>
+      <p>Настройки здесь не пишут руками. Всё, что можно проверить, программа проверяет и решает за вас.</p>
+    </div>
+    <div class="grid">
+      <article class="card w8">
+        <h3>Выбирает стратегию из 119</h3>
+        <p>Провайдеры блокируют по-разному, единого ответа нет. Подбор идёт по списку и останавливается на первой, с которой открываются YouTube, Discord и картинки.</p>
+        <div class="visual sweep">
+          <div><span>02</span><span>general (EXP)</span><span>5 из 7</span></div>
+          <div class="pick"><span>03</span><span>general (ALT11)</span><span><em>7 из 7</em> выбрана</span></div>
+          <div><span>04 … 119</span><span>остальные</span><span>не проверялись</span></div>
+        </div>
+      </article>
+      <article class="card">
+        <h3>Следит каждые 3 минуты</h3>
+        <p>Процесс упал или провайдер сменил фильтр: сторож заметит и переключит стратегию. Значок в трее показывает состояние цветом.</p>
+        <ul class="visual tiles">
+          <li><svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#34D399"/><path d="M36 6 19 36h10l-5 22 22-30H36l10-22z" fill="#0F172A"/></svg>работает</li>
+          <li><svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#FBBF24"/><path d="M36 6 19 36h10l-5 22 22-30H36l10-22z" fill="#0F172A"/></svg>пауза</li>
+          <li><svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#64748B"/><path d="M36 6 19 36h10l-5 22 22-30H36l10-22z" fill="#0F172A"/></svg>выключен</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Чинит картинки в Discord</h3>
+        <p>Вложения и превью идут с отдельного адреса, который часто режут. Prosto Zapret закрепляет за ним рабочий узел, и картинки открываются.</p>
+        <div class="visual chat">
+          <span class="pic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
+          <code>media.discordapp.net</code>
+        </div>
+      </article>
+      <article class="card">
+        <h3>Не мешает ExitLag и VPN</h3>
+        <p>ExitLag ведёт только игровые серверы. Когда сайты идут через VPN, сторож не трогает стратегии, а подбор отказывается мерить через туннель.</p>
+        <div class="visual routes">
+          <div class="yes"><i aria-hidden="true"></i><span>Игровые серверы</span><code>через ExitLag</code></div>
+          <div class="yes"><i aria-hidden="true"></i><span>YouTube и Discord</span><code>напрямую</code></div>
+          <div class="wait"><i aria-hidden="true"></i><span>VPN включён</span><code>сторож ждёт</code></div>
+        </div>
+      </article>
+      <article class="card">
+        <h3>Спрашивает перед обновлением</h3>
+        <p>Новый релиз находится сам. Одно нажатие, и обновление скачается, не тронув настройки и ваши списки.</p>
+        <div class="visual prompt">
+          Доступен новый апдейт: <b>v0.0.4</b><br>
+          Скачать сейчас? <em>Y</em> скачать&nbsp;&nbsp;<em>N</em> позже
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="faq" aria-labelledby="h-faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="h-faq">Вопросы</h2>
+      <p>Коротко о том, что обычно спрашивают перед первым запуском.</p>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Почему нет одной настройки на все случаи<span class="plus" aria-hidden="true"></span></summary>
+        <p>Оборудование у провайдеров разное и со временем меняется. То, что работает у одного, у другого молчит. Поэтому стратегий много, а выбор программа делает сама.</p>
+      </details>
+      <details>
+        <summary>Когда обход не поможет<span class="plus" aria-hidden="true"></span></summary>
+        <p>Если провайдер закрыл адрес сервера целиком, а не читает содержимое пакетов, изменить вид пакета недостаточно. Для картинок в Discord есть отдельное решение, в остальных случаях выручит только VPN.</p>
+      </details>
+      <details>
+        <summary>Почему антивирус ругается при запуске<span class="plus" aria-hidden="true"></span></summary>
+        <p>Обход использует драйвер перехвата пакетов WinDivert. Он подписан и стоит во многих сетевых программах, но некоторые антивирусы реагируют на сам факт перехвата.</p>
+      </details>
+      <details>
+        <summary>Что нужно для работы<span class="plus" aria-hidden="true"></span></summary>
+        <p>Windows 10 или 11, права администратора и доступ к GitHub, откуда скачивается архив и обновления. VPN, аккаунт и ручные настройки не нужны.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="download" aria-labelledby="h-dl">
+  <div class="wrap">
+    <div class="cta">
+      <div>
+        <h2 id="h-dl">Распаковать и запустить</h2>
+        <p class="lead">Скачайте архив с последним релизом, распакуйте в любое место без кириллицы в пути и запустите первый файл. Остальное он сделает сам.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://github.com/sacon1s/prosto-zapret/releases/latest">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Скачать с GitHub
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/sacon1s/prosto-zapret">Исходный код</a>
+        </div>
+      </div>
+      <dl class="release">
+        <div><dt>Версия</dt><dd><span data-ver>v0.0.3</span></dd></div>
+        <div><dt>Система</dt><dd>Windows 10 и 11, 64 бита</dd></div>
+        <div><dt>Размер</dt><dd>около 2 МБ</dd></div>
+        <div><dt>Лицензия</dt><dd><a class="link" href="https://github.com/sacon1s/prosto-zapret/blob/main/LICENSE.txt">MIT</a></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="top">
+      <a class="brand" href="https://github.com/sacon1s/prosto-zapret">
+        <svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#34D399"/><path d="M36 6 19 36h10l-5 22 22-30H36l10-22z" fill="#0F172A"/></svg>
+        Prosto Zapret
+      </a>
+      <div class="links">
+        <a class="link" href="https://github.com/sacon1s/prosto-zapret/releases">Релизы</a>
+        <a class="link" href="https://github.com/sacon1s/prosto-zapret/blob/main/README.md">README</a>
+        <a class="link" href="#faq">Вопросы</a>
+      </div>
+    </div>
+    <p class="credit">Ядро zapret: bol-van. Пресеты и списки: Flowseal. Перехват пакетов: WinDivert. Проект не связан с Discord, YouTube, ExitLag и GitHub. Используйте там, где это законно.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  if(location.search.indexOf('flat')>-1)document.documentElement.classList.add('flat');
+  fetch('https://api.github.com/repos/sacon1s/prosto-zapret/releases/latest')
+    .then(function(r){return r.ok?r.json():null})
+    .then(function(j){
+      if(!j||!j.tag_name)return;
+      var v=String(j.tag_name).replace(/^v/,'');
+      document.querySelectorAll('[data-ver]').forEach(function(el){el.textContent='v'+v});
+    }).catch(function(){});
+})();
+</script>
+</body>
+</html>

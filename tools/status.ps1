@@ -48,6 +48,7 @@ Write-Host ''
 if ($t.YouTube) { Write-Host '[+] YouTube: работает' -ForegroundColor Green } else { Write-Host '[x] YouTube: НЕ работает' -ForegroundColor Red }
 if ($t.Discord) { Write-Host '[+] Discord: работает' -ForegroundColor Green } else { Write-Host '[x] Discord: НЕ работает' -ForegroundColor Red }
 if ($t.Media) { Write-Host '[+] Картинки Discord: работают' -ForegroundColor Green } else { Write-Host '[x] Картинки Discord: НЕ работают' -ForegroundColor Red }
+Write-Host ('[i] VPN / туннели: ' + (Get-TunnelText)) -ForegroundColor DarkGray
 
 # real video bytes test
 Write-Host 'Проверка видеопотока (реальные байты с googlevideo)...' -ForegroundColor DarkGray

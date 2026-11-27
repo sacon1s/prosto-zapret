@@ -21,13 +21,11 @@ if ($exist) {
 }
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal | Out-Null
 # kill any leftover guardian processes so the fresh instance is guaranteed to start
-Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.CommandLine -like '*autostart.ps1*' } |
+Get-GuardianProcesses |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 
 # stop a guardian left from a previous install location so the new one takes over
-Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.CommandLine -like '*autostart.ps1*' } |
+Get-GuardianProcesses |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 
 Write-Host '[+] Задача автозапуска "ZapretPro" создана:' -ForegroundColor Green
@@ -52,7 +50,7 @@ foreach ($m in $mgr) {
 
 Start-ScheduledTask -TaskName $taskName
 Start-Sleep -Seconds 3
-$g = @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like '*autostart.ps1*' })
+$g = @(Get-GuardianProcesses)
 if ($g.Count -gt 0) { Write-Host '[+] Сторож запущен и уже работает.' -ForegroundColor Green }
 else { Write-Host '[~] Сторож стартует (подождите до 20 секунд) - лог: logs\guardian.log' -ForegroundColor Yellow }
 Write-Log 'autostart task installed'

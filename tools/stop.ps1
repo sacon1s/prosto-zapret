@@ -4,8 +4,7 @@ Assert-Admin
 $ErrorActionPreference = 'Continue'
 
 # 1. stop resident guardians (otherwise they would restart winws within ~30s)
-$g = @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*autostart.ps1*' })
+$g = @(Get-GuardianProcesses)
 foreach ($p in $g) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 if ($g.Count) { Write-Host ('[+] Сторож остановлен ({0} шт.) - перезапуска не будет.' -f $g.Count) -ForegroundColor Green }
 

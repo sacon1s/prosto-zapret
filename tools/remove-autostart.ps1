@@ -12,8 +12,7 @@ if ($task) {
     Write-Host '[i] Задача автозапуска не найдена.' -ForegroundColor DarkGray
 }
 
-$g = @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*autostart.ps1*' })
+$g = @(Get-GuardianProcesses)
 foreach ($p in $g) {
     Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
     Write-Host ('[+] Сторож остановлен (PID {0}).' -f $p.ProcessId) -ForegroundColor Green

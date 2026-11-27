@@ -49,9 +49,8 @@ Mark $(if ($mgrRunning) { '!!' } else { 'OK' }) ('чужой менеджер wi
 if ($mgrRunning) { $issues += 'служба ZapretGUI активна и конкурирует за winws - запустите extra\TAKE-CONTROL.bat (или оставьте ZapretGUI и не запускайте наш)' }
 
 # 5. VPN adapters
-$vpn = @(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceDescription -match 'TAP|WireGuard|OpenVPN|Tailscale|ZeroTier|tun|Wintun' })
-Mark 'OK' ('VPN-адаптеры: ' + $(if ($vpn.Count) { ($vpn | Select-Object -ExpandProperty Name) -join ', ' } else { 'нет активных' })) $(if ($vpn.Count) { 'Yellow' } else { 'Green' })
-if ($vpn.Count) { $issues += 'активен VPN - zapret с VPN вместе может конфликтовать' }
+$tun = Get-TunnelState
+Mark $(if ($tun.Active) { '~~' } else { 'OK' }) ('VPN / туннели: ' + (Get-TunnelText -T $tun)) $(if ($tun.Active) { 'Yellow' } else { 'Green' })
 
 # 6. system/user proxy
 $proxy = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -ErrorAction SilentlyContinue)

@@ -13,8 +13,7 @@ if ($task) {
     Unregister-ScheduledTask -TaskName 'ZapretPro' -Confirm:$false
     Write-Host '[+] Задача автозапуска удалена.' -ForegroundColor Green
 }
-$g = @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*autostart.ps1*' })
+$g = @(Get-GuardianProcesses)
 foreach ($p in $g) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 if ($g.Count) { Write-Host '[+] Сторож остановлен.' -ForegroundColor Green }
 

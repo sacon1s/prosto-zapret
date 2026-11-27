@@ -47,15 +47,18 @@ function Assert-Admin {
 
 # ---------- config ----------
 function Read-Config {
+    # never throws: the UI reads the config every second while the worker may be rewriting it
     $cfg = @{}
-    if (Test-Path $ConfigFile) {
-        foreach ($line in Get-Content $ConfigFile) {
-            $t = $line.Trim()
-            if ($t -eq '' -or $t.StartsWith('#') -or -not $t.Contains('=')) { continue }
-            $k, $v = $t.Split('=', 2)
-            $cfg[$k.Trim().ToUpper()] = $v.Trim()
+    try {
+        if ([IO.File]::Exists($ConfigFile)) {
+            foreach ($line in [IO.File]::ReadAllLines($ConfigFile)) {
+                $t = $line.Trim()
+                if ($t -eq '' -or $t.StartsWith('#') -or -not $t.Contains('=')) { continue }
+                $k, $v = $t.Split('=', 2)
+                $cfg[$k.Trim().ToUpper()] = $v.Trim()
+            }
         }
-    }
+    } catch { }
     return $cfg
 }
 
@@ -357,4 +360,80 @@ function Test-YouTubeStream {
         if (-not $res.Ok) { $res.Note = ('googlevideo HTTP ' + $res.Code) }
     } catch { $res.Note = $_.Exception.Message }
     return $res
+}
+
+# ---------- strategy history ----------
+function Write-Stats {
+    param([string]$Event, [string]$Strategy = '')
+    $csv = Join-Path $LogsDir 'strategy-history.csv'
+    try {
+        if (-not (Test-Path $csv)) { 'time,event,strategy,detail' | Set-Content $csv -Encoding ASCII }
+        Add-Content -Path $csv -Value ('{0},{1},{2},{3}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Event, $Strategy, '') -Encoding UTF8
+    } catch { }
+}
+
+# ---------- finding the guardian without false matches ----------
+function Get-GuardianProcesses {
+    # Strict match: only real guardians (-File ...\tools\autostart.ps1). A loose "*autostart.ps1*"
+    # also matches install-autostart.ps1 itself and monitoring commands - with fatal results.
+    try {
+        return @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
+            Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -match '-File\s+"?[^"]*\\tools\\autostart\.ps1"?\s*$' })
+    } catch { return @() }
+}
+
+# ---------- tunnels: VPN, ExitLag ----------
+function Get-TunnelState {
+    # Active = the blocked sites themselves travel through a non-physical adapter (full-tunnel VPN).
+    # ExitLag only tunnels game servers, so with it alone Active stays $false.
+    if ($script:TunnelCache -and ((New-TimeSpan $script:TunnelCacheAt (Get-Date)).TotalSeconds -lt 120)) { return $script:TunnelCache }
+    $r = @{ Active = $false; Kind = ''; Adapter = ''; ExitLag = $false; UpVirtual = @() }
+    try { $r.ExitLag = (@(Get-Process -Name 'ExitLag' -ErrorAction SilentlyContinue)).Count -gt 0 } catch { }
+    try {
+        $ads = @(Get-NetAdapter -ErrorAction SilentlyContinue)
+        $r.UpVirtual = @($ads | Where-Object { $_.Status -eq 'Up' -and -not $_.HardwareInterface -and $_.Name -notmatch 'Loopback|vEthernet|Bluetooth|WAN Miniport|Local Area Connection' } | ForEach-Object { $_.Name })
+        $ip = $null
+        try { $ip = [string]((Resolve-DnsName 'www.youtube.com' -Type A -ErrorAction Stop | Where-Object { $_.IPAddress -match '^\d+\.' } | Select-Object -First 1).IPAddress) } catch { }
+        if ($ip) {
+            $route = @(Find-NetRoute -RemoteIPAddress $ip -ErrorAction Stop) | Where-Object { $_.DestinationPrefix } | Select-Object -First 1
+            $ifa = $ads | Where-Object { $_.ifIndex -eq $route.InterfaceIndex } | Select-Object -First 1
+            if ($ifa -and -not $ifa.HardwareInterface) {
+                $r.Active = $true
+                $r.Adapter = $ifa.Name
+                $r.Kind = 'vpn'
+                if (($ifa.Name + ' ' + $ifa.InterfaceDescription) -match 'exitlag') { $r.Kind = 'exitlag' }
+            }
+        }
+    } catch { }
+    $script:TunnelCache = $r
+    $script:TunnelCacheAt = Get-Date
+    return $r
+}
+
+function Get-TunnelText {
+    param($T)
+    if (-not $T) { $T = Get-TunnelState }
+    if ($T.Active) {
+        if ($T.Kind -eq 'exitlag') { return ('ExitLag ведёт и эти сайты через туннель (' + $T.Adapter + ') - сторож не меняет стратегии') }
+        return ('VPN-туннель ' + $T.Adapter + ' - сайты идут через него, сторож не меняет стратегии')
+    }
+    if ($T.ExitLag -and @($T.UpVirtual).Count -gt 0) { return ('ExitLag запущен, туннель: ' + (@($T.UpVirtual) -join ', ') + ' - совместим, сайты идут напрямую') }
+    if ($T.ExitLag) { return 'нет, ExitLag запущен - совместим, всё идёт напрямую' }
+    if (@($T.UpVirtual).Count -gt 0) { return ('есть адаптеры (' + (@($T.UpVirtual) -join ', ') + '), но сайты идут напрямую') }
+    return 'нет - всё идёт напрямую'
+}
+
+function Get-HealthText {
+    param($T)
+    if (-not $T) { return 'ещё не проверял' }
+    if ($T.YouTube -and $T.Discord -and $T.Media) { return 'всё работает (YouTube, Discord, картинки)' }
+    return ('YouTube: ' + $(if ($T.YouTube) { 'да' } else { 'нет' }) + ' · Discord: ' + $(if ($T.Discord) { 'да' } else { 'нет' }) + ' · картинки: ' + $(if ($T.Media) { 'да' } else { 'нет' }))
+}
+
+function Test-BasicInternet {
+    # a neutral, never-blocked reference host: tells "the site is blocked" from "the link is down"
+    try {
+        $out = & curl.exe -4 -s -o NUL -m 4 --connect-timeout 3 -w '%{http_code}' 'https://ya.ru/' 2>$null
+        return ((($out | Out-String).Trim()) -match '^[23]\d\d$')
+    } catch { return $false }
 }

@@ -29,8 +29,7 @@ foreach ($n in $names) {
 
 # stop our winws and guardian so the returned manager takes over
 $null = Stop-Zapret
-$g = @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*autostart.ps1*' })
+$g = @(Get-GuardianProcesses)
 foreach ($p in $g) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 Write-Host '[i] Наш сторож и winws остановлены - управление снова у ZapretGUI.' -ForegroundColor DarkGray
 Write-Log 'restore-zapretgui: service re-enabled'
