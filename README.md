@@ -49,7 +49,7 @@
 - `lists\list-general-user.txt` — **ваши** домены, добавить в обход (по одному в строке: `example.com`).
 - `lists\list-exclude-user.txt` — домены, которые обходить **не нужно**.
 - `lists\ipset-exclude-user.txt` — IP/подсети, которые обходить не нужно.
-- `strategies\01.txt … 119.txt` — библиотека стратегий (01-22 пересобираются из пресетов при UPDATE).
+- `strategies\01.txt вЂ¦ 138.txt` — библиотека стратегий (01-22 пересобираются из пресетов при UPDATE).
 - `logs\` — журналы: `zapret.log`, `guardian.log`, `tune-report.txt`, `winws-lasterr.log`.
 
 ### Дополнительные сервисы (не только Discord/YouTube)
@@ -169,7 +169,7 @@ prosto-zapret\
 │                         FIX-MEDIA, TAKE-CONTROL, UNINSTALL, меню zapret.bat)
 ├── bin\                  winws.exe, WinDivert, фейковые пакеты
 ├── lists\                доменные и IP-списки (+ ваши *-user.txt)
-├── strategies\           119 стратегий (01-22 пресеты Flowseal, 23-27 проверенные и
+├── strategies\           0 стратегий (01-22 пресеты Flowseal, 23-27 проверенные и
 │                         медиа, 28+ собственные комбинации методов)
 ├── tools\                вся логика на PowerShell
 └── logs\                 журналы
