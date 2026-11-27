@@ -75,6 +75,15 @@ function Invoke-RecalibrateCheck {
 
 function Invoke-GuardianStep {
     try {
+        # announce the tray icon once, so the user knows where it lives
+        if (-not $script:iconAnnounced) {
+            $script:iconAnnounced = $true
+            try {
+                $icon.Visible = $true
+                $icon.ShowBalloonTip(5000, 'Prosto Zapret', 'Сторож в трее: ищите значок щита (может быть под стрелкой ^). Правый клик - меню.', 'Info')
+                Write-Log 'tray icon re-announced (visible)' $logFile
+            } catch { }
+        }
         $cfg = Read-Config
         $cur = 1
         if ($cfg.ContainsKey('STRATEGY')) { try { $cur = [int]$cfg.STRATEGY } catch { } }
