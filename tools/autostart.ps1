@@ -166,115 +166,126 @@ if ($others.Count -gt 0) {
     exit 0
 }
 
-# ---------- tray ----------
-$form = New-Object Windows.Forms.Form
-$form.ShowInTaskbar = $false
-$form.WindowState = 'Minimized'
-$form.FormBorderStyle = 'None'
-$form.Opacity = 0
-$form.AllowTransparency = $true
-
-$icon = New-Object Windows.Forms.NotifyIcon
-$icon.Icon = [System.Drawing.SystemIcons]::Shield
-$icon.Text = 'Prosto Zapret - сторож'
-$icon.Visible = $true
-
-$menu = New-Object Windows.Forms.ContextMenuStrip
-$miStart = $menu.Items.Add('Включить обход');      $miStart.Tag = 'start'
-$miStop  = $menu.Items.Add('Выключить обход (пауза)'); $miStop.Tag = 'stop'
-[void]$menu.Items.Add('-')
-$miStatus = $menu.Items.Add('Статус');             $miStatus.Tag = 'status'
-$miTune   = $menu.Items.Add('Подбор настроек...'); $miTune.Tag = 'tune'
-$miGames  = $menu.Items.Add('Игры');               $miGames.Tag = 'games'
-[void]$menu.Items.Add('-')
-$miCfg    = $menu.Items.Add('Настройки (config.ini)'); $miCfg.Tag = 'cfg'
-$miList   = $menu.Items.Add('Мои списки');         $miList.Tag = 'lists'
-$miClose  = $menu.Items.Add('Закрыть значок (обход продолжит работать)'); $miClose.Tag = 'close'
-$icon.ContextMenuStrip = $menu
-
-$games = [ordered]@{
-    'Выключить игровой режим' = @('off', '', '')
-    'CS2'         = @('udp', '', '27000-27100')
-    'Dota 2'      = @('udp', '', '27000-27030')
-    'Minecraft'   = @('tcp', '25565', '')
-    'Valorant'    = @('udp', '', '7000-8000')
-    'Warframe'    = @('udp', '', '4950-4960')
+# ---------- tray (with fallback to plain loop if WinForms unavailable) ----------
+function Invoke-GuardianLoopFallback {
+    Write-Log 'tray unavailable - fallback to plain loop' $logFile
+    while ($true) {
+        Invoke-GuardianStep
+        Start-Sleep -Seconds 30
+    }
 }
-$gamesMenu = New-Object Windows.Forms.ContextMenuStrip
-foreach ($g in $games.Keys) {
-    $mi = $gamesMenu.Items.Add($g); $mi.Tag = $g
-}
-$miGames.DropDownItems.Clear()
-foreach ($mi in $gamesMenu.Items) { [void]$miGames.DropDownItems.Add($mi) }
 
-$menu.Add_ItemClicked({
-    param($s, $e)
-    $tag = $e.Item.Tag
-    if (-not $tag) { return }
-    switch ($tag) {
-        'start' {
-            $script:paused = $false
-            $cfg = Read-Config
-            $cur = 1
-            if ($cfg.ContainsKey('STRATEGY')) { try { $cur = [int]$cfg.STRATEGY } catch { } }
-            $r = Start-Zapret -Num $cur -WaitSec 3
-            if ($r.Ok) { $icon.ShowBalloonTip(3000, 'Prosto Zapret', 'Обход включён.', 'Info'); Write-Stats 'manual-start' $cur }
-            else { $icon.ShowBalloonTip(3000, 'Prosto Zapret', 'Не удалось запустить!', 'Error') }
-        }
-        'stop' {
-            $script:paused = $true
-            Stop-Zapret | Out-Null
-            $icon.ShowBalloonTip(3000, 'Prosto Zapret', 'Обход на паузе (до следующего входа в Windows или Включить).', 'Info')
-            Write-Stats 'manual-stop' ''
-        }
-        'status' {
-            $procs = Get-ZapretProcess
-            $cfg = Read-Config
-            $cur = 1
-            if ($cfg.ContainsKey('STRATEGY')) { try { $cur = [int]$cfg.STRATEGY } catch { } }
-            $state = 'выключен'
-            if ($procs.Count -gt 0) { $state = 'работает' }
-            if ($script:paused) { $state = 'на паузе' }
-            $icon.ShowBalloonTip(4000, 'Prosto Zapret - статус',
-                ('{0}; стратегия {1} ({2})' -f $state, $cur, (Get-StrategyName -Num $cur)), 'Info')
-        }
-        'tune' {
-            Start-Process powershell -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f (Join-Path $PSScriptRoot 'tune.ps1'))
-        }
-        'cfg' { Start-Process notepad ($ConfigFile) }
-        'lists' { Start-Process explorer "/select,`"$((Join-Path $ListsDir 'list-general-user.txt'))`"" }
-        'close' { $icon.Visible = $false; $form.Close() }
-        default {
-            if ($games.Contains($tag)) {
-                $v = $games[$tag]
-                Set-ConfigKey -Key 'GAME_FILTER' -Value $v[0]
-                if ($v[1]) { Set-ConfigKey -Key 'GAME_FILTER_TCP' -Value $v[1] }
-                if ($v[2]) { Set-ConfigKey -Key 'GAME_FILTER_UDP' -Value $v[2] }
-                $icon.ShowBalloonTip(3000, 'Игровой режим', ('Пресет: {0}. Перезапуск обхода...' -f $tag), 'Info')
+try {
+    $form = New-Object Windows.Forms.Form
+    $form.ShowInTaskbar = $false
+    $form.WindowState = 'Minimized'
+    $form.FormBorderStyle = 'None'
+    $form.Opacity = 0
+    $form.AllowTransparency = $true
+
+    $icon = New-Object Windows.Forms.NotifyIcon
+    $icon.Icon = [System.Drawing.SystemIcons]::Shield
+    $icon.Text = 'Prosto Zapret - сторож'
+    $icon.Visible = $true
+
+    $menu = New-Object Windows.Forms.ContextMenuStrip
+    $miStart = $menu.Items.Add('Включить обход');      $miStart.Tag = 'start'
+    $miStop  = $menu.Items.Add('Выключить обход (пауза)'); $miStop.Tag = 'stop'
+    [void]$menu.Items.Add('-')
+    $miStatus = $menu.Items.Add('Статус');             $miStatus.Tag = 'status'
+    $miTune   = $menu.Items.Add('Подбор настроек...'); $miTune.Tag = 'tune'
+    $miGames  = $menu.Items.Add('Игры');               $miGames.Tag = 'games'
+    [void]$menu.Items.Add('-')
+    $miCfg    = $menu.Items.Add('Настройки (config.ini)'); $miCfg.Tag = 'cfg'
+    $miList   = $menu.Items.Add('Мои списки');         $miList.Tag = 'lists'
+    $miClose  = $menu.Items.Add('Закрыть значок (обход продолжит работать)'); $miClose.Tag = 'close'
+    $icon.ContextMenuStrip = $menu
+
+    $games = [ordered]@{
+        'Выключить игровой режим' = @('off', '', '')
+        'CS2'         = @('udp', '', '27000-27100')
+        'Dota 2'      = @('udp', '', '27000-27030')
+        'Minecraft'   = @('tcp', '25565', '')
+        'Valorant'    = @('udp', '', '7000-8000')
+        'Warframe'    = @('udp', '', '4950-4960')
+    }
+    $gamesMenu = New-Object Windows.Forms.ContextMenuStrip
+    foreach ($g in $games.Keys) {
+        $mi = $gamesMenu.Items.Add($g); $mi.Tag = $g
+        [void]$miGames.DropDownItems.Add($mi)
+    }
+
+    $menu.Add_ItemClicked({
+        param($s, $e)
+        $tag = $e.Item.Tag
+        if (-not $tag) { return }
+        switch ($tag) {
+            'start' {
+                $script:paused = $false
                 $cfg = Read-Config
                 $cur = 1
                 if ($cfg.ContainsKey('STRATEGY')) { try { $cur = [int]$cfg.STRATEGY } catch { } }
-                $null = Stop-Zapret
-                Set-IpsetActive -On $true
-                Start-Zapret -Num $cur -WaitSec 3 | Out-Null
-                Write-Stats 'game-preset' $tag
+                $r = Start-Zapret -Num $cur -WaitSec 3
+                if ($r.Ok) { $icon.ShowBalloonTip(3000, 'Prosto Zapret', 'Обход включён.', 'Info'); Write-Stats 'manual-start' $cur }
+                else { $icon.ShowBalloonTip(3000, 'Prosto Zapret', 'Не удалось запустить!', 'Error') }
+            }
+            'stop' {
+                $script:paused = $true
+                Stop-Zapret | Out-Null
+                $icon.ShowBalloonTip(3000, 'Prosto Zapret', 'Обход на паузе (до следующего входа в Windows или Включить).', 'Info')
+                Write-Stats 'manual-stop' ''
+            }
+            'status' {
+                $procs = Get-ZapretProcess
+                $cfg = Read-Config
+                $cur = 1
+                if ($cfg.ContainsKey('STRATEGY')) { try { $cur = [int]$cfg.STRATEGY } catch { } }
+                $state = 'выключен'
+                if ($procs.Count -gt 0) { $state = 'работает' }
+                if ($script:paused) { $state = 'на паузе' }
+                $icon.ShowBalloonTip(4000, 'Prosto Zapret - статус',
+                    ('{0}; стратегия {1} ({2})' -f $state, $cur, (Get-StrategyName -Num $cur)), 'Info')
+            }
+            'tune' {
+                Start-Process powershell -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f (Join-Path $PSScriptRoot 'tune.ps1'))
+            }
+            'cfg' { Start-Process notepad ($ConfigFile) }
+            'lists' { Start-Process explorer "/select,`"$((Join-Path $ListsDir 'list-general-user.txt'))`"" }
+            'close' { $icon.Visible = $false; $form.Close() }
+            default {
+                if ($games.Contains($tag)) {
+                    $v = $games[$tag]
+                    Set-ConfigKey -Key 'GAME_FILTER' -Value $v[0]
+                    if ($v[1]) { Set-ConfigKey -Key 'GAME_FILTER_TCP' -Value $v[1] }
+                    if ($v[2]) { Set-ConfigKey -Key 'GAME_FILTER_UDP' -Value $v[2] }
+                    $icon.ShowBalloonTip(3000, 'Игровой режим', ('Пресет: {0}. Перезапуск обхода...' -f $tag), 'Info')
+                    $cfg = Read-Config
+                    $cur = 1
+                    if ($cfg.ContainsKey('STRATEGY')) { try { $cur = [int]$cfg.STRATEGY } catch { } }
+                    $null = Stop-Zapret
+                    Set-IpsetActive -On $true
+                    Start-Zapret -Num $cur -WaitSec 3 | Out-Null
+                    Write-Stats 'game-preset' $tag
+                }
             }
         }
-    }
-})
-$icon.Add_DoubleClick({
-    $procs = Get-ZapretProcess
-    $state = 'выключен'
-    if ($script:paused) { $state = 'на паузе' }
-    elseif ($procs.Count -gt 0) { $state = 'работает' }
-    $icon.ShowBalloonTip(4000, 'Prosto Zapret', ('Статус: {0}' -f $state), 'Info')
-})
+    })
+    $icon.Add_DoubleClick({
+        $procs = Get-ZapretProcess
+        $state = 'выключен'
+        if ($script:paused) { $state = 'на паузе' }
+        elseif ($procs.Count -gt 0) { $state = 'работает' }
+        $icon.ShowBalloonTip(4000, 'Prosto Zapret', ('Статус: {0}' -f $state), 'Info')
+    })
 
-# ---------- loop via winforms timer (keeps tray responsive) ----------
-$timer = New-Object Windows.Forms.Timer
-$timer.Interval = $script:stepMs
-$timer.Add_Tick({ Invoke-GuardianStep })
-$timer.Start()
+    # ---------- loop via winforms timer (keeps tray responsive) ----------
+    $timer = New-Object Windows.Forms.Timer
+    $timer.Interval = $script:stepMs
+    $timer.Add_Tick({ Invoke-GuardianStep })
+    $timer.Start()
+} catch {
+    Write-Log ('tray init failed: {0}' -f $_.Exception.Message) $logFile
+}
 
 if ($script:wasRunningAtStart) {
     Write-Log 'winws already running at guardian start' $logFile
@@ -292,6 +303,10 @@ if ($script:wasRunningAtStart) {
     }
 }
 
-[Windows.Forms.Application]::Run($form)
-$icon.Visible = $false
-Write-Log 'guardian tray closed' $logFile
+if ($timer) {
+    [Windows.Forms.Application]::Run($form)
+    $icon.Visible = $false
+    Write-Log 'guardian tray closed' $logFile
+} else {
+    Invoke-GuardianLoopFallback
+}

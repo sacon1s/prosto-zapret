@@ -16,8 +16,12 @@ if (-not (Test-Path $LogsDir)) { New-Item -ItemType Directory -Path $LogsDir | O
 function Disable-QuickEdit {
     try {
         if ($Host.Name -ne 'ConsoleHost') { return }
-        $sig = 'using System;using System.Runtime.InteropServices;public static class QEMode{[DllImport("kernel32.dll",SetLastError=true)]public static extern IntPtr GetStdHandle(int h);[DllImport("kernel32.dll",SetLastError=true)]public static extern bool GetConsoleMode(IntPtr h,out uint m);[DllImport("kernel32.dll",SetLastError=true)]public static extern bool SetConsoleMode(IntPtr h,uint m);}'
-        $qe = Add-Type -MemberDefinition $sig -Name 'QEMode' -Namespace 'Win32' -PassThru
+        $sig = @'
+[DllImport("kernel32.dll", SetLastError = true)] public static extern System.IntPtr GetStdHandle(int nStdHandle);
+[DllImport("kernel32.dll", SetLastError = true)] public static extern bool GetConsoleMode(System.IntPtr hConsoleHandle, out uint lpMode);
+[DllImport("kernel32.dll", SetLastError = true)] public static extern bool SetConsoleMode(System.IntPtr hConsoleHandle, uint dwMode);
+'@
+        $qe = Add-Type -MemberDefinition $sig -Name 'QuickEditKiller' -Namespace 'Win32Native' -PassThru -ErrorAction Stop
         $h = $qe::GetStdHandle(-10)
         $m = [uint32]0
         [void]$qe::GetConsoleMode($h, [ref]$m)
