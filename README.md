@@ -169,7 +169,7 @@ prosto-zapret\
 │                         FIX-MEDIA, TAKE-CONTROL, UNINSTALL, меню zapret.bat)
 ├── bin\                  winws.exe, WinDivert, фейковые пакеты
 ├── lists\                доменные и IP-списки (+ ваши *-user.txt)
-├── strategies\           131 стратегий (01-22 пресеты Flowseal, 23-27 проверенные и
+├── strategies\           134 стратегий (01-22 пресеты Flowseal, 23-27 проверенные и
 │                         медиа, 28+ собственные комбинации методов)
 ├── tools\                вся логика на PowerShell
 └── logs\                 журналы
