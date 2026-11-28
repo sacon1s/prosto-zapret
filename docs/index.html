@@ -89,7 +89,7 @@ html.flat{scroll-behavior:auto}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}}
 
 /* the real status window, rebuilt in HTML */
-.appwin{width:100%;max-width:520px;justify-self:end;border-radius:10px;overflow:hidden;background:var(--bg-app);border:1px solid #3A4558;box-shadow:0 24px 48px rgba(0,0,0,.5);font-family:var(--ui)}
+.appwin{user-select:none;-webkit-user-select:none;-moz-user-select:none;width:100%;max-width:520px;justify-self:end;border-radius:10px;overflow:hidden;background:var(--bg-app);border:1px solid #3A4558;box-shadow:0 24px 48px rgba(0,0,0,.5);font-family:var(--ui)}
 .appwin-bar{display:flex;align-items:center;gap:8px;height:36px;padding:0 14px 0 12px;background:#F3F3F3;color:#1B1B1B;font-size:13px}
 .appwin-bar .tile{width:16px;height:16px}
 .appwin-x{margin-left:auto;width:18px;text-align:center;color:#5C5C5C}
@@ -221,7 +221,7 @@ main>section.hero{padding:0}
 }
 @media (max-width:799px){
   .hero .wrap{grid-template-columns:1fr;gap:48px;min-height:0;padding-top:16px;padding-bottom:64px}
-  .appwin{justify-self:stretch;max-width:none}
+  .appwin{user-select:none;-webkit-user-select:none;-moz-user-select:none;justify-self:stretch;max-width:none}
   .diagram{display:none}
   .diagram-m{display:grid;gap:12px}
   .diagram-m div{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:16px;border-radius:var(--r-control);background:var(--bg-app);border:1px solid var(--line);font-size:14px;color:var(--text-2)}
@@ -296,7 +296,7 @@ main>section.hero{padding:0}
         <a class="btn btn-ghost" href="#how">Как это работает</a>
       </div>
       <div class="stats" data-enter style="--i:4">
-        <div class="stat"><b>0</b><span>стратегий обхода</span></div>
+        <div class="stat"><b>131</b><span>стратегий обхода</span></div>
         <div class="stat"><b>3 мин</b><span>между проверками</span></div>
         <div class="stat"><b>5</b><span>файлов в папке</span></div>
       </div>
