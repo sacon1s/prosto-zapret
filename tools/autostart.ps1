@@ -607,6 +607,12 @@ $onMenuClick = {
 }
 $onEnsureTick = {
     try {
+        if (Test-Path (Join-Path $LogsDir 'exit-requested')) {
+            Write-Log 'exit requested - closing tray' $logFile
+            $script:icon.Visible = $false
+            $script:trayForm.Close()
+            return
+        }
         while ($script:State.Notices.Count -gt 0) { Show-Notice ([string]$script:State.Notices.Dequeue()) }
         Update-TrayIcon
         if (-not $script:announced) {
@@ -679,14 +685,26 @@ function New-Tray {
         $gi.Tag = 'game:' + $g
     }
     $miGames.DropDown = $gameMenu
-    $gameMenu.Add_ItemClicked($onMenuClick)
+    $gameMenu.Add_Opening({ try { Write-Log 'games menu opened' $logFile } catch { } })
     [void]$menu.Items.Add('-')
     $mi = $menu.Items.Add('Настройки (config.ini)');  $mi.Tag = 'cfg'
     $mi = $menu.Items.Add('Мои списки');              $mi.Tag = 'lists'
     $mi = $menu.Items.Add('Скрыть значок и остановить сторожа (обход продолжит работать до перезагрузки)'); $mi.Tag = 'close'
 
-    $menu.Add_ItemClicked($onMenuClick)
+    $menu.Add_Opening({ try { Write-Log 'menu opened' $logFile } catch { } })
+    $itemClick = {
+        param($s, $e)
+        $t2 = [string]$s.Tag
+        if (-not $t2) { return }
+        try { Write-Log ('click: ' + $t2) $logFile } catch { }
+        $script:pendingTag = $t2
+        $script:deferTimer.Stop()
+        $script:deferTimer.Start()
+    }
+    foreach ($it in $menu.Items) { $it.Add_Click($itemClick) }
+    foreach ($it in $gameMenu.Items) { $it.Add_Click($itemClick) }
     $icon.ContextMenuStrip = $menu
+    $icon.Add_MouseDown({ param($s, $e) try { Write-Log ('icon mouse: ' + $e.Button) $logFile } catch { } })
     $icon.Add_MouseClick({ param($s, $e) if ($e.Button -eq [Windows.Forms.MouseButtons]::Left -and $e.Clicks -eq 1) { Invoke-Action 'status' } })
     $script:menu = $menu
 
@@ -752,6 +770,19 @@ function Invoke-SelfTest {
     $menu.Close()
     Pump 300
 
+    # 2b. the real click chain: PerformClick fires the per-item Click handler
+    $menuItem = @($menu.Items | Where-Object { $_.Tag -eq 'status' })[0]
+    $menuItem.PerformClick()
+    Pump 1000
+    $chainOk = $false
+    try { $sl = (Get-Content (Join-Path $LogsDir 'selftest.log') -ErrorAction Stop | Out-String); $chainOk = (($sl -match 'click: status') -and ($sl -match 'action: status')) } catch { }
+    $shotChain = Save-Shot 'chain'
+
+    # 2c. a button inside the status window
+    $btnCheck = @($script:statusForm.Controls | Where-Object { $_.Tag -eq 'check' })[0]
+    if ($btnCheck) { $btnCheck.PerformClick(); Pump 2500 }
+    $shotWindow = Save-Shot 'window-btn'
+
     # 2. a real check through the background worker
     $State.Queue.Enqueue('check')
     $null = Start-Worker
@@ -773,6 +804,9 @@ function Invoke-SelfTest {
     Write-Host ('helper types compiled  : ' + $script:hasPassive)
     Write-Host ('notice visible         : ' + [bool]($script:noticeForm -and -not $script:noticeForm.IsDisposed -and $script:noticeForm.Visible))
     Write-Host ('menu screenshot        : ' + $shotMenu)
+    Write-Host ('click chain logged     : ' + $chainOk)
+    Write-Host ('chain screenshot       : ' + $shotChain)
+    Write-Host ('window button shot     : ' + $shotWindow)
     Write-Host ('status screenshot      : ' + $shotStatus)
     Write-Host ('notice screenshot      : ' + $shotNotice)
 
@@ -786,6 +820,7 @@ function Invoke-SelfTest {
 
 # ================= boot =================
 if ($SelfTest) { Invoke-SelfTest; return }
+Remove-Item (Join-Path $LogsDir 'exit-requested') -Force -ErrorAction SilentlyContinue
 Write-Log 'guardian v4 starting' $logFile
 Start-Sleep -Seconds 5
 $others = @(Get-GuardianProcesses)

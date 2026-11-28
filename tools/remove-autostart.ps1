@@ -13,9 +13,9 @@ if ($task) {
 }
 
 $g = @(Get-GuardianProcesses)
-foreach ($p in $g) {
-    Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
-    Write-Host ('[+] Сторож остановлен (PID {0}).' -f $p.ProcessId) -ForegroundColor Green
+if ($g.Count) {
+    $null = Stop-GuardianGraceful
+    Write-Host '[+] Сторож остановлен.' -ForegroundColor Green
 }
 
 $n = Stop-Zapret

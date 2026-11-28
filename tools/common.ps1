@@ -386,6 +386,26 @@ function Get-GuardianProcesses {
 }
 
 # ---------- tunnels: VPN, ExitLag ----------
+
+# ---------- graceful guardian stop (a force-killed guardian leaves a dead tray icon behind) ----------
+function Stop-GuardianGraceful {
+    param([int]$TimeoutSec = 12)
+    $procs = @(Get-GuardianProcesses)
+    if ($procs.Count -eq 0) { return 0 }
+    $flag = Join-Path $LogsDir 'exit-requested'
+    try { New-Item -ItemType File -Path $flag -Force | Out-Null } catch { }
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    while ((Get-Date) -lt $deadline) {
+        if (@(Get-GuardianProcesses).Count -eq 0) {
+            Remove-Item $flag -Force -ErrorAction SilentlyContinue
+            return $procs.Count
+        }
+        Start-Sleep -Milliseconds 300
+    }
+    foreach ($p2 in (Get-GuardianProcesses)) { Stop-Process -Id $p2.ProcessId -Force -ErrorAction SilentlyContinue }
+    Remove-Item $flag -Force -ErrorAction SilentlyContinue
+    return $procs.Count
+}
 function Get-TunnelState {
     # Active = the blocked sites themselves travel through a non-physical adapter (full-tunnel VPN).
     # ExitLag only tunnels game servers, so with it alone Active stays $false.

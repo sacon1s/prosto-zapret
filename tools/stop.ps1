@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Continue'
 
 # 1. stop resident guardians (otherwise they would restart winws within ~30s)
 $g = @(Get-GuardianProcesses)
-foreach ($p in $g) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+$null = Stop-GuardianGraceful
 if ($g.Count) { Write-Host ('[+] Сторож остановлен ({0} шт.) - перезапуска не будет.' -f $g.Count) -ForegroundColor Green }
 
 # 2. stop winws

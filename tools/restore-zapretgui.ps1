@@ -30,7 +30,7 @@ foreach ($n in $names) {
 # stop our winws and guardian so the returned manager takes over
 $null = Stop-Zapret
 $g = @(Get-GuardianProcesses)
-foreach ($p in $g) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+$null = Stop-GuardianGraceful
 Write-Host '[i] Наш сторож и winws остановлены - управление снова у ZapretGUI.' -ForegroundColor DarkGray
 Write-Log 'restore-zapretgui: service re-enabled'
 exit 0

@@ -21,12 +21,10 @@ if ($exist) {
 }
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal | Out-Null
 # kill any leftover guardian processes so the fresh instance is guaranteed to start
-Get-GuardianProcesses |
-    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+$null = Stop-GuardianGraceful
 
 # stop a guardian left from a previous install location so the new one takes over
-Get-GuardianProcesses |
-    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+$null = Stop-GuardianGraceful
 
 Write-Host '[+] Задача автозапуска "ZapretPro" создана:' -ForegroundColor Green
 Write-Host '    - старт скрытым при входе в Windows (права администратора);' -ForegroundColor Green
