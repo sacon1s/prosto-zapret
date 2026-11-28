@@ -55,4 +55,5 @@ wa.me
 whatsapp.com
 windscribe.com
 x.ai
-x.comnsocket.lichess.orgn
+x.com
+socket.lichess.org
